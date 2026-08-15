@@ -70,7 +70,7 @@ $extraJs = ['chart-config.js'];
                 <div class="col-lg-6">
                     <div class="card-custom p-4 h-100">
                         <h5 class="fw-bold mb-3 text-dark-green"><i class="fa-solid fa-chart-pie me-2"></i> Students Distribution by Department</h5>
-                        <div style="height: 280px;">
+                        <div style="height: 280px; position: relative; width: 100%; max-width: 100%;">
                             <canvas id="departmentChart"></canvas>
                         </div>
                     </div>
@@ -79,7 +79,7 @@ $extraJs = ['chart-config.js'];
                 <div class="col-lg-6">
                     <div class="card-custom p-4 h-100">
                         <h5 class="fw-bold mb-3 text-dark-green"><i class="fa-solid fa-chart-column me-2"></i> SIWES Application & Placement Status</h5>
-                        <div style="height: 280px;">
+                        <div style="height: 280px; position: relative; width: 100%; max-width: 100%;">
                             <canvas id="allocationChart"></canvas>
                         </div>
                     </div>

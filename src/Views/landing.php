@@ -6,7 +6,7 @@ $baseUrl = (require __DIR__ . '/../../config/app.php')['base_url'];
 ?>
 
 <!-- 1. HERO SECTION -->
-<section id="home" class="hero-section text-white d-flex align-items-center" style="background: var(--hero-gradient), url('<?= $baseUrl ?>/<?= htmlspecialchars($settings['hero_image'] ?? 'images/hero.jpg') ?>') center/cover no-repeat;">
+<section id="home" class="hero-section text-white d-flex align-items-center" style="background: var(--hero-gradient), url('<?= \App\Core\Helper::asset($settings['hero_image'] ?? 'images/hero.jpg') ?>') center/cover no-repeat;">
     <div class="container position-relative z-2">
         <div class="row align-items-center gy-5">
             <div class="col-lg-7">
@@ -108,7 +108,7 @@ $baseUrl = (require __DIR__ . '/../../config/app.php')['base_url'];
         <div class="row align-items-center gy-5">
             <div class="col-lg-6">
                 <div class="position-relative">
-                    <img src="<?= $baseUrl ?>/<?= htmlspecialchars($settings['about_image'] ?? 'images/about.jpg') ?>" alt="About SIWES Allocation" class="img-fluid rounded-4 shadow-lg w-100" style="max-height: 420px; object-fit: cover;">
+                    <img src="<?= \App\Core\Helper::asset($settings['about_image'] ?? 'images/about.jpg') ?>" alt="About SIWES Allocation" class="img-fluid rounded-4 shadow-lg w-100" style="max-height: 420px; object-fit: cover;">
                     <div class="position-absolute bottom-0 start-0 m-3 m-md-4 p-3 bg-white rounded-3 shadow-lg border-start border-4 border-success d-none d-sm-block" style="max-width: 280px;">
                         <h6 class="fw-bold mb-1 text-dark-green"><i class="fa-solid fa-shield-halved me-1"></i> Paperless Workflow</h6>
                         <small class="text-secondary fs-8">Digital verification and instant letter generation for coordinators.</small>
@@ -350,7 +350,7 @@ $baseUrl = (require __DIR__ . '/../../config/app.php')['base_url'];
             <div class="col-12 col-lg-5 mb-3 mb-lg-0">
                 <a class="navbar-brand d-inline-flex align-items-center gap-2 text-white mb-3" href="#">
                     <?php if (!empty($settings['site_logo'])): ?>
-                        <img src="<?= $baseUrl ?>/<?= htmlspecialchars($settings['site_logo']) ?>" alt="Logo" class="navbar-brand-logo">
+                        <img src="<?= \App\Core\Helper::asset($settings['site_logo']) ?>" alt="Logo" class="navbar-brand-logo">
                     <?php else: ?>
                         <div class="navbar-brand-icon">
                             <i class="fa-solid fa-graduation-cap"></i>

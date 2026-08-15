@@ -32,7 +32,7 @@ $baseUrl = $appConfig['base_url'];
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Custom Enterprise Theme CSS -->
-    <link rel="stylesheet" href="<?= Helper::asset('css/style.css') ?>">
+    <!-- Custom Enterprise Theme CSS (Cache-Busting for Render / CDN) -->
+    <link rel="stylesheet" href="<?= Helper::asset('css/style.css') ?>?v=<?= file_exists(__DIR__ . '/../../../public/css/style.css') ? filemtime(__DIR__ . '/../../../public/css/style.css') : '2.1.0' ?>">
 </head>
 <body>

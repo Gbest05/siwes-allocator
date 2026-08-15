@@ -86,7 +86,7 @@ $flash = Helper::getFlash();
                                         </div>
                                         <div class="col-12 col-sm-4 text-center text-sm-start">
                                             <?php if (!empty($settings['site_logo'])): ?>
-                                                <img src="<?= $baseUrl ?>/<?= htmlspecialchars($settings['site_logo']) ?>" alt="Logo Preview" class="img-thumbnail d-inline-block" style="max-height: 50px;">
+                                                <img src="<?= \App\Core\Helper::asset($settings['site_logo']) ?>" alt="Logo Preview" class="img-thumbnail d-inline-block" style="max-height: 50px;">
                                                 <div class="fs-8 text-success mt-1"><i class="fa-solid fa-check-circle"></i> Custom Logo Active</div>
                                             <?php else: ?>
                                                 <div class="p-2 border rounded text-secondary fs-8 bg-light d-inline-block">
@@ -122,7 +122,7 @@ $flash = Helper::getFlash();
                                             <small class="text-muted fs-8">Upload a new hero background photo (JPG, PNG, WEBP, up to 8MB)</small>
                                         </div>
                                         <div class="col-12 col-sm-4 text-center text-sm-start">
-                                            <img src="<?= $baseUrl ?>/<?= htmlspecialchars($settings['hero_image'] ?? 'images/hero.jpg') ?>" alt="Hero Preview" class="img-thumbnail rounded d-inline-block" style="max-height: 80px; object-fit: cover;">
+                                            <img src="<?= \App\Core\Helper::asset($settings['hero_image'] ?? 'images/hero.jpg') ?>" alt="Hero Preview" class="img-thumbnail rounded d-inline-block" style="max-height: 80px; object-fit: cover;">
                                             <div class="fs-8 text-secondary mt-1">Current Hero Image</div>
                                         </div>
                                     </div>
@@ -157,7 +157,7 @@ $flash = Helper::getFlash();
                                             <small class="text-muted fs-8">Upload about section image (JPG, PNG, WEBP, up to 8MB)</small>
                                         </div>
                                         <div class="col-12 col-sm-4 text-center text-sm-start">
-                                            <img src="<?= $baseUrl ?>/<?= htmlspecialchars($settings['about_image'] ?? 'images/about.jpg') ?>" alt="About Preview" class="img-thumbnail rounded d-inline-block" style="max-height: 80px; object-fit: cover;">
+                                            <img src="<?= \App\Core\Helper::asset($settings['about_image'] ?? 'images/about.jpg') ?>" alt="About Preview" class="img-thumbnail rounded d-inline-block" style="max-height: 80px; object-fit: cover;">
                                             <div class="fs-8 text-secondary mt-1">Current About Image</div>
                                         </div>
                                     </div>
