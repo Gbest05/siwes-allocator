@@ -9,6 +9,14 @@ $siteSettings = Helper::getAllSettings();
 ?>
 
 <div class="auth-wrapper py-3">
+    <!-- Top-Left Back to Homepage Link -->
+    <a href="<?= $baseUrl ?>/index.php?route=home" class="btn-auth-back d-inline-flex align-items-center gap-2 text-decoration-none" title="Back to Homepage">
+        <div class="back-icon-circle">
+            <i class="fa-solid fa-arrow-left text-primary-green"></i>
+        </div>
+        <span class="d-none d-sm-inline fs-7">Back to Home</span>
+    </a>
+
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-11 col-sm-10 col-md-9 col-lg-7 col-xl-6">
@@ -129,12 +137,6 @@ $siteSettings = Helper::getAllSettings();
                         <span class="text-secondary">Already registered?</span>
                         <a href="<?= $baseUrl ?>/index.php?route=login" class="text-primary-green fw-bold text-decoration-none ms-1">Sign In Here</a>
                     </div>
-                </div>
-
-                <div class="text-center mt-2">
-                    <a href="<?= $baseUrl ?>/index.php?route=home" class="text-secondary fs-8 text-decoration-none">
-                        <i class="fa-solid fa-arrow-left me-1"></i> Back to Homepage
-                    </a>
                 </div>
 
             </div>

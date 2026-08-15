@@ -9,11 +9,19 @@ $siteSettings = Helper::getAllSettings();
 ?>
 
 <div class="auth-wrapper">
+    <!-- Top-Left Back to Homepage Link -->
+    <a href="<?= $baseUrl ?>/index.php?route=home" class="btn-auth-back d-inline-flex align-items-center gap-2 text-decoration-none" title="Back to Homepage">
+        <div class="back-icon-circle">
+            <i class="fa-solid fa-arrow-left text-primary-green"></i>
+        </div>
+        <span class="d-none d-sm-inline fs-7">Back to Home</span>
+    </a>
+
     <div class="container py-2">
         <div class="row justify-content-center">
             <div class="col-11 col-sm-9 col-md-6 col-lg-5 col-xl-4">
                 
-                <!-- Brand / Return Link -->
+                <!-- Brand Logo / Title -->
                 <div class="text-center mb-3">
                     <a href="<?= $baseUrl ?>/index.php?route=home" class="d-inline-flex align-items-center gap-2 text-decoration-none text-dark-charcoal fw-bold fs-5">
                         <?php if (!empty($siteSettings['site_logo'])): ?>
@@ -27,7 +35,7 @@ $siteSettings = Helper::getAllSettings();
                     </a>
                 </div>
 
-                <div class="card-custom p-4 p-md-4 bg-white shadow-sm border">
+                <div class="card-custom p-4 bg-white shadow-sm border">
                     <div class="text-center mb-3">
                         <h4 class="fw-bold text-dark-charcoal mb-1">Welcome Back</h4>
                         <p class="text-secondary fs-7 mb-0">Sign in to your SIWES portal account</p>
@@ -81,12 +89,6 @@ $siteSettings = Helper::getAllSettings();
                         <span class="text-secondary fs-8">Don't have an account?</span>
                         <a href="<?= $baseUrl ?>/index.php?route=register" class="text-primary-green fw-bold text-decoration-none ms-1 fs-8">Create Account</a>
                     </div>
-                </div>
-
-                <div class="text-center mt-3">
-                    <a href="<?= $baseUrl ?>/index.php?route=home" class="text-secondary fs-8 text-decoration-none">
-                        <i class="fa-solid fa-arrow-left me-1"></i> Back to Homepage
-                    </a>
                 </div>
 
             </div>
