@@ -46,6 +46,11 @@ class Helper {
         exit;
     }
 
+    public static function asset(string $path): string {
+        $baseUrl = (require __DIR__ . '/../../config/app.php')['base_url'];
+        return rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
+    }
+
     public static function jsonResponse(array $data, int $statusCode = 200): void {
         header('Content-Type: application/json');
         http_response_code($statusCode);

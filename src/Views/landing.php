@@ -6,7 +6,7 @@ $baseUrl = (require __DIR__ . '/../../config/app.php')['base_url'];
 ?>
 
 <!-- 1. HERO SECTION -->
-<section class="hero-section text-white d-flex align-items-center" style="background: var(--hero-gradient), url('<?= $baseUrl ?>/<?= htmlspecialchars($settings['hero_image'] ?? 'images/hero.jpg') ?>') center/cover no-repeat;">
+<section id="home" class="hero-section text-white d-flex align-items-center" style="background: var(--hero-gradient), url('<?= $baseUrl ?>/<?= htmlspecialchars($settings['hero_image'] ?? 'images/hero.jpg') ?>') center/cover no-repeat;">
     <div class="container position-relative z-2">
         <div class="row align-items-center gy-5">
             <div class="col-lg-7">
@@ -344,7 +344,7 @@ $baseUrl = (require __DIR__ . '/../../config/app.php')['base_url'];
 </section>
 
 <!-- 8. FOOTER SECTION -->
-<footer class="footer-section">
+<footer id="contact" class="footer-section">
     <div class="container">
         <div class="row g-4 mb-5">
             <div class="col-12 col-lg-5 mb-3 mb-lg-0">
