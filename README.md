@@ -56,12 +56,26 @@ Configure database credentials in `config/database.php` or set environment varia
 'password' => 'your_password',
 ```
 
-### 3. Run Locally
+### 3. Run with Docker (Recommended)
+You can run the full Nginx + PHP 8 + PostgreSQL stack using Docker:
+```bash
+docker-compose up -d --build
+```
+Open **[http://localhost:8000](http://localhost:8000)** in your browser.
+
+### 4. Run with PHP Local Server
 To run using PHP's built-in development server:
 ```bash
 php -S localhost:8000 -t public
 ```
 Open **[http://localhost:8000](http://localhost:8000)** in your browser.
+
+### 5. Deploy to Render.com
+1. Create a new **Web Service** on Render.
+2. Connect this repository (`https://github.com/Gbest05/siwes-allocator`).
+3. Set the **Runtime** to **Docker** (it will automatically use the root `Dockerfile`).
+4. Add a Render **PostgreSQL Database** and attach its `DATABASE_URL` to your Web Service environment variables.
+5. Deploy! The container automatically configures Nginx, PHP-FPM, migrations, and port bindings.
 
 ---
 

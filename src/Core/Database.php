@@ -17,6 +17,7 @@ class Database {
                 if ($config['driver'] === 'pgsql') {
                     $dsn = "pgsql:host={$config['host']};port={$config['port']};dbname={$config['dbname']}";
                     self::$instance = new PDO($dsn, $config['username'], $config['password'], $config['options']);
+                    self::initializePostgresSchema(self::$instance);
                 } else {
                     $dsn = "mysql:host={$config['host']};port={$config['port']};dbname={$config['dbname']};charset={$config['charset']}";
                     self::$instance = new PDO($dsn, $config['username'], $config['password'], $config['options']);
@@ -201,4 +202,27 @@ class Database {
                 (2, 4, 'Company Allocation Completed!', 'Congratulations! You have been successfully allocated to Interswitch Group Tech Hub.', 'success', 1);");
         }
     }
+
+    /**
+     * Automatic PostgreSQL Schema & Seed Loader
+     */
+    private static function initializePostgresSchema(PDO $db): void {
+        try {
+            $stmt = $db->query("SELECT to_regclass('public.users')");
+            $exists = $stmt ? $stmt->fetchColumn() : null;
+            if (!$exists) {
+                $schemaFile = __DIR__ . '/../../database/schema.sql';
+                $seedFile = __DIR__ . '/../../database/seed.sql';
+                if (file_exists($schemaFile)) {
+                    $db->exec(file_get_contents($schemaFile));
+                }
+                if (file_exists($seedFile)) {
+                    $db->exec(file_get_contents($seedFile));
+                }
+            }
+        } catch (PDOException $e) {
+            // Silently continue if tables already exist or permission boundary prevents to_regclass
+        }
+    }
 }
+

@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: siwes_app
+    restart: always
+    ports:
+      - "8000:80"
+    environment:
+      - DB_DRIVER=pgsql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=siwes_db
+      - DB_USER=postgres
+      - DB_PASS=postgres
+    depends_on:
+      - db
+    volumes:
+      - ./public/uploads:/var/www/html/public/uploads
+
+  db:
+    image: postgres:15-alpine
+    container_name: siwes_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: siwes_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
+
+volumes:
+  pgdata:
