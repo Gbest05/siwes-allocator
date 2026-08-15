@@ -24,12 +24,12 @@ $extraJs = ['allocation.js'];
 
             <!-- Section 1: Unallocated Students Pool -->
             <div class="card-custom p-4 mb-4">
-                <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4 pb-3 border-bottom">
                     <div>
                         <h4 class="fw-bold mb-1 text-dark-green"><i class="fa-solid fa-diagram-project me-2"></i> Smart SIWES Allocation Suite</h4>
                         <p class="text-secondary fs-7 mb-0">Select an approved student to trigger the multi-criteria compatibility matching engine.</p>
                     </div>
-                    <span class="badge bg-light-green text-dark-green fw-bold"><?= count($approvedApps) ?> Unallocated Pool</span>
+                    <span class="badge bg-light-green text-dark-green fw-bold align-self-start align-self-md-auto"><?= count($approvedApps) ?> Unallocated Pool</span>
                 </div>
 
                 <?php if (!empty($approvedApps)): ?>
@@ -79,9 +79,9 @@ $extraJs = ['allocation.js'];
 
             <!-- Section 2: Completed Allocations Directory -->
             <div class="card-custom p-4">
-                <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4 pb-3 border-bottom">
                     <h5 class="fw-bold mb-0 text-dark-green"><i class="fa-solid fa-list-check me-2"></i> Active Allocations</h5>
-                    <span class="badge bg-emerald fw-bold"><?= count($allocations) ?> Placed</span>
+                    <span class="badge bg-emerald fw-bold align-self-start align-self-md-auto"><?= count($allocations) ?> Placed</span>
                 </div>
 
                 <div class="table-responsive">

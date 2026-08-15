@@ -19,13 +19,13 @@ $siteSettings = Helper::getAllSettings();
 
     <div class="container py-2">
         <div class="row justify-content-center">
-            <div class="col-11 col-sm-9 col-md-6 col-lg-5 col-xl-4">
+            <div class="col-12 col-sm-10 col-md-7 col-lg-5 col-xl-4">
                 
                 <!-- Brand Logo / Title -->
                 <div class="text-center mb-3">
                     <a href="<?= $baseUrl ?>/index.php?route=home" class="d-inline-flex align-items-center gap-2 text-decoration-none text-dark-charcoal fw-bold fs-5">
                         <?php if (!empty($siteSettings['site_logo'])): ?>
-                            <img src="<?= $baseUrl ?>/<?= htmlspecialchars($siteSettings['site_logo']) ?>" alt="Logo" style="height: 36px; max-width: 120px; object-fit: contain;">
+                            <img src="<?= $baseUrl ?>/<?= htmlspecialchars($siteSettings['site_logo']) ?>" alt="Logo" class="navbar-brand-logo" style="height: 36px;">
                         <?php else: ?>
                             <div class="bg-primary-green text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
                                 <i class="fa-solid fa-graduation-cap fs-5"></i>
@@ -35,9 +35,9 @@ $siteSettings = Helper::getAllSettings();
                     </a>
                 </div>
 
-                <div class="card-custom p-4 bg-white shadow-sm border">
+                <div class="card-custom p-3 p-sm-4 bg-white shadow-sm border">
                     <div class="text-center mb-3">
-                        <h4 class="fw-bold text-dark-charcoal mb-1">Welcome Back</h4>
+                        <h4 class="fw-bold text-dark-charcoal mb-1 fs-5">Welcome Back</h4>
                         <p class="text-secondary fs-7 mb-0">Sign in to your SIWES portal account</p>
                     </div>
 
@@ -55,7 +55,7 @@ $siteSettings = Helper::getAllSettings();
                             <label for="login_id" class="form-label fw-semibold fs-7 mb-1">Email or Matric Number</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-user text-secondary"></i></span>
-                                <input type="text" class="form-control border-start-0 ps-0" id="login_id" name="login_id" placeholder="e.g. F/ND/22/3210001 or email" required autofocus>
+                                <input type="text" class="form-control border-start-0 ps-0 fs-7" id="login_id" name="login_id" placeholder="e.g. F/ND/22/3210001 or email" required autofocus>
                             </div>
                         </div>
 
@@ -66,8 +66,8 @@ $siteSettings = Helper::getAllSettings();
                             </div>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-lock text-secondary"></i></span>
-                                <input type="password" class="form-control border-start-0 border-end-0 ps-0" id="password" name="password" placeholder="Enter password" required>
-                                <button class="btn btn-outline-secondary toggle-password" type="button" data-target="password">
+                                <input type="password" class="form-control border-start-0 border-end-0 ps-0 fs-7" id="password" name="password" placeholder="Enter password" required>
+                                <button class="btn btn-outline-secondary toggle-password" type="button" data-target="password" aria-label="Toggle password visibility">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
                             </div>
@@ -80,7 +80,7 @@ $siteSettings = Helper::getAllSettings();
                             </label>
                         </div>
 
-                        <button type="submit" class="btn btn-green w-100 py-2 fw-bold">
+                        <button type="submit" class="btn btn-green w-100 py-2 fw-bold fs-7">
                             <i class="fa-solid fa-right-to-bracket me-2"></i> Log In
                         </button>
                     </form>

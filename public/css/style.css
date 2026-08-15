@@ -1,6 +1,7 @@
 /* 
  * SIWES Allocation Management System - Custom Enterprise Design System
  * Palette: Green (#16A34A), Dark Green (#166534), Emerald (#10B981), Charcoal (#111827)
+ * Built for 100% Mobile & Desktop Responsiveness across 320px to 1920px+
  */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -14,24 +15,96 @@
     --sidebar-bg: #111827;
     --secondary-gray: #6B7280;
     --bg-light: #F8FAFC;
+    --bg-subtle: #F1F5F9;
     --white: #FFFFFF;
     --warning: #F59E0B;
     --danger: #DC2626;
     --border-color: #E2E8F0;
     --card-shadow: 0 4px 20px -2px rgba(17, 24, 39, 0.05);
+    --card-shadow-hover: 0 12px 28px -4px rgba(17, 24, 39, 0.1);
     --green-gradient: linear-gradient(135deg, #166534 0%, #16A34A 100%);
+    --hero-gradient: linear-gradient(135deg, rgba(17, 24, 39, 0.92) 0%, rgba(22, 101, 52, 0.94) 100%);
     --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
+/* ==========================================================================
+   1. CORE CSS FOUNDATION & ZERO HORIZONTAL SCROLL RESET
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 80px;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
 body {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
     font-family: var(--font-main);
     background-color: var(--bg-light);
     color: var(--dark-charcoal);
-    overflow-x: hidden;
     line-height: 1.6;
+    -webkit-text-size-adjust: 100%;
+    overflow-x: clip;
 }
 
-/* Typography Overrides */
+img,
+svg,
+video,
+iframe {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+input,
+select,
+textarea,
+button {
+    max-width: 100%;
+    font-family: inherit;
+}
+
+a,
+button,
+input,
+select,
+textarea {
+    touch-action: manipulation;
+}
+
+p,
+h1, h2, h3, h4, h5, h6,
+span,
+a,
+li,
+td,
+th {
+    overflow-wrap: break-word;
+    word-break: normal;
+}
+
+/* Accessible focus ring */
+:focus-visible {
+    outline: 2px solid var(--primary-green) !important;
+    outline-offset: 2px !important;
+}
+
+/* ==========================================================================
+   2. TYPOGRAPHY & COLOR UTILITIES
+   ========================================================================== */
+
 h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
     color: var(--dark-charcoal);
@@ -40,251 +113,403 @@ h1, h2, h3, h4, h5, h6 {
 
 .text-primary-green { color: var(--primary-green) !important; }
 .text-dark-green { color: var(--dark-green) !important; }
+.text-emerald { color: var(--emerald) !important; }
 .bg-primary-green { background-color: var(--primary-green) !important; color: white !important; }
 .bg-dark-green { background-color: var(--dark-green) !important; color: white !important; }
 .bg-light-green { background-color: var(--light-green) !important; color: var(--dark-green) !important; }
 .bg-dark-charcoal { background-color: var(--dark-charcoal) !important; color: white !important; }
 .bg-emerald { background-color: var(--emerald) !important; color: white !important; }
 
-/* Custom Buttons */
+/* Font size utilities (fixes missing classes) */
+.fs-7 { font-size: 0.875rem !important; }
+.fs-8 { font-size: 0.775rem !important; }
+.fs-9 { font-size: 0.7rem !important; }
+.fw-extrabold { font-weight: 800 !important; }
+
+/* Responsive Container Constraints */
+.max-w-700 { max-width: 700px; width: 100%; }
+.max-w-600 { max-width: 600px; width: 100%; }
+.max-w-500 { max-width: 500px; width: 100%; }
+.max-w-400 { max-width: 400px; width: 100%; }
+
+/* Responsive Section Spacing */
+.section-padding {
+    padding: clamp(3rem, 6vw, 5.5rem) 0;
+}
+
+.section-padding-sm {
+    padding: clamp(2rem, 4vw, 3.5rem) 0;
+}
+
+.section-title {
+    font-size: clamp(1.5rem, 3.2vw + 0.3rem, 2.35rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.25;
+}
+
+.section-subtitle {
+    font-size: clamp(0.95rem, 1.2vw + 0.2rem, 1.1rem);
+    color: var(--secondary-gray);
+}
+
+/* ==========================================================================
+   3. CUSTOM BUTTONS & TOUCH TARGETS
+   ========================================================================== */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    font-weight: 600;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 .btn-green {
     background: var(--green-gradient);
-    color: var(--white);
+    color: var(--white) !important;
     border: none;
-    font-weight: 600;
     padding: 0.625rem 1.35rem;
     border-radius: 10px;
-    transition: all 0.25s ease-in-out;
     box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
 }
 
 .btn-green:hover {
     background: linear-gradient(135deg, #14532D 0%, #15803D 100%);
-    color: var(--white);
+    color: var(--white) !important;
     transform: translateY(-2px);
     box-shadow: 0 6px 18px rgba(22, 163, 74, 0.35);
 }
 
 .btn-outline-green {
     border: 2px solid var(--primary-green);
-    color: var(--primary-green);
-    font-weight: 600;
+    color: var(--primary-green) !important;
+    background: transparent;
     padding: 0.55rem 1.25rem;
     border-radius: 10px;
-    background: transparent;
-    transition: all 0.25s ease-in-out;
 }
 
 .btn-outline-green:hover {
     background-color: var(--primary-green);
-    color: var(--white);
+    color: var(--white) !important;
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
 }
 
-/* Landing Page Styles */
+.btn-cta-large {
+    padding: clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 4vw, 2.75rem);
+    font-size: clamp(0.95rem, 1.5vw, 1.15rem);
+    border-radius: 50px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.btn-cta-large:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* ==========================================================================
+   4. NAVIGATION (DESKTOP & MOBILE)
+   ========================================================================== */
+
 .navbar-siwes {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.96);
     backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border-color);
-    padding: 1rem 0;
+    padding: 0.75rem 0;
     transition: all 0.3s ease;
+    z-index: 1030;
 }
 
 .navbar-brand {
     font-weight: 800;
-    font-size: 1.4rem;
+    font-size: clamp(1.15rem, 3.5vw, 1.35rem);
     color: var(--dark-charcoal) !important;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-right: 0.5rem;
 }
 
 .navbar-brand span {
     color: var(--primary-green);
 }
 
+.navbar-brand-logo {
+    height: 38px;
+    max-width: 140px;
+    object-fit: contain;
+}
+
+.navbar-brand-icon {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    background-color: var(--primary-green);
+    color: white;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.navbar-toggler {
+    padding: 0.4rem 0.65rem;
+    border-radius: 8px;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-light);
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+.navbar-toggler:hover,
+.navbar-toggler:focus {
+    background-color: var(--light-green);
+    border-color: var(--primary-green);
+    box-shadow: none;
+}
+
+.navbar-nav .nav-link {
+    color: var(--dark-charcoal);
+    padding: 0.5rem 0.85rem;
+    border-radius: 8px;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link:focus,
+.navbar-nav .nav-link.active {
+    color: var(--primary-green) !important;
+}
+
+.nav-auth-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+}
+
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        background: var(--white);
+        border-radius: 14px;
+        padding: 1.25rem;
+        margin-top: 0.75rem;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 12px 30px -4px rgba(17, 24, 39, 0.12);
+    }
+    .navbar-nav {
+        margin-bottom: 0.5rem !important;
+    }
+    .navbar-nav .nav-link {
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+    }
+    .navbar-nav .nav-link:hover,
+    .navbar-nav .nav-link:focus {
+        background-color: var(--light-green);
+        color: var(--dark-green) !important;
+    }
+    .nav-auth-actions {
+        flex-direction: column;
+        width: 100%;
+        padding-top: 1rem;
+        margin-top: 0.5rem;
+        border-top: 1px solid var(--border-color);
+        gap: 0.625rem;
+    }
+    .nav-auth-actions .btn {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+        padding: 0.7rem 1rem;
+    }
+}
+
+/* ==========================================================================
+   5. HERO SECTION
+   ========================================================================== */
+
 .hero-section {
     position: relative;
-    padding: 8rem 0 6rem 0;
-    background: linear-gradient(135deg, rgba(17, 24, 39, 0.88), rgba(22, 101, 52, 0.92)), url('../images/hero.jpg') center/cover no-repeat;
+    padding: clamp(4.5rem, 8vw, 7.5rem) 0 clamp(3rem, 6vw, 5.5rem) 0;
+    background: var(--hero-gradient), url('../images/hero.jpg') center/cover no-repeat;
     color: var(--white);
 }
 
 .hero-title {
-    font-size: 3.2rem;
+    font-size: clamp(1.85rem, 4.2vw + 0.4rem, 3.4rem);
     font-weight: 800;
-    line-height: 1.15;
+    line-height: 1.18;
+    letter-spacing: -0.03em;
     color: var(--white);
 }
 
 .hero-subtitle {
-    font-size: 1.2rem;
+    font-size: clamp(0.95rem, 1.4vw + 0.2rem, 1.2rem);
     color: #E2E8F0;
+    line-height: 1.65;
     max-width: 620px;
 }
 
-/* Dashboard Layout */
-.app-wrapper {
+.hero-btn-group {
     display: flex;
-    min-height: 100vh;
+    flex-wrap: wrap;
+    gap: 0.875rem;
 }
 
-.app-sidebar {
-    width: 260px;
-    background-color: var(--sidebar-bg);
-    color: #9CA3AF;
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 1040;
-    transition: all 0.3s ease;
-    height: 100vh;
-    max-height: 100vh;
-    overflow-y: auto;
-    overflow-x: hidden;
+.hero-btn-group .btn {
+    padding: clamp(0.65rem, 1.5vw, 0.85rem) clamp(1.15rem, 2.5vw, 1.65rem);
+    font-size: clamp(0.9rem, 1.2vw, 1.05rem);
 }
 
-/* Sleek custom scrollbars for sidebar */
-.app-sidebar::-webkit-scrollbar {
-    width: 6px;
+@media (max-width: 575.98px) {
+    .hero-btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    .hero-btn-group .btn {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
-.app-sidebar::-webkit-scrollbar-track {
-    background: rgba(17, 24, 39, 0.95);
-}
-
-.app-sidebar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-}
-
-.app-sidebar::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-green);
-}
-
-.app-sidebar .sidebar-brand {
-    padding: 1.25rem 1.25rem;
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: var(--white);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    position: sticky;
-    top: 0;
-    background-color: var(--sidebar-bg);
-    z-index: 2;
-}
-
-.app-sidebar .nav-link {
-    color: #9CA3AF;
-    padding: 0.75rem 1.15rem;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    border-radius: 8px;
-    margin: 0.15rem 0.75rem;
-    transition: all 0.2s ease;
-}
-
-.app-sidebar .nav-link i {
-    font-size: 1.1rem;
-    width: 24px;
-}
-
-.app-sidebar .nav-link:hover, .app-sidebar .nav-link.active {
-    color: var(--white);
-    background-color: var(--primary-green);
-}
-
-.app-main {
-    flex: 1;
-    margin-left: 260px;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    transition: all 0.3s ease;
-}
-
-.app-topbar {
-    height: 70px;
+.hero-match-card {
     background: var(--white);
-    border-bottom: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: clamp(1.15rem, 3vw, 1.5rem);
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* ==========================================================================
+   6. ANIMATED STATISTICS SECTION
+   ========================================================================== */
+
+.stat-box {
+    padding: clamp(1rem, 2.5vw, 1.5rem);
+    border-radius: 14px;
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    height: 100%;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 2rem;
-    position: sticky;
-    top: 0;
-    z-index: 1030;
+    flex-direction: column;
+    justify-content: center;
 }
 
-/* High-contrast Topbar Profile Button */
-.btn-topbar-profile {
-    background-color: var(--white);
-    color: var(--dark-charcoal) !important;
-    border: 1px solid #D1D5DB !important;
-    padding: 0.45rem 0.95rem;
-    border-radius: 10px;
+.stat-box:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--card-shadow-hover);
+}
+
+.stat-counter-number {
+    font-size: clamp(1.85rem, 4vw + 0.2rem, 2.85rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 0.35rem;
+}
+
+.stat-counter-label {
+    font-size: clamp(0.8rem, 1.1vw, 0.95rem);
+    color: var(--secondary-gray);
     font-weight: 600;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    transition: all 0.2s ease;
+    margin-bottom: 0;
 }
 
-.btn-topbar-profile:hover,
-.btn-topbar-profile:focus,
-.btn-topbar-profile:active,
-.btn-topbar-profile.show {
-    background-color: #F8FAFC !important;
-    color: var(--dark-charcoal) !important;
-    border-color: #9CA3AF !important;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
+/* ==========================================================================
+   7. CARDS & PROCESS STEPS & TESTIMONIALS
+   ========================================================================== */
 
-.btn-topbar-profile .user-name-label {
-    color: var(--dark-charcoal) !important;
-    font-size: 0.9rem;
-    font-weight: 600;
-}
-
-.app-content {
-    padding: 2rem;
-    flex: 1;
-}
-
-/* Custom Cards & Panels */
 .card-custom {
     background: var(--white);
     border-radius: 14px;
     border: 1px solid var(--border-color);
     box-shadow: var(--card-shadow);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-custom:hover {
-    box-shadow: 0 8px 24px -4px rgba(17, 24, 39, 0.08);
+    box-shadow: var(--card-shadow-hover);
+}
+
+.feature-card {
+    padding: clamp(1.25rem, 3vw, 1.75rem);
+    height: 100%;
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(22, 163, 74, 0.3);
 }
 
 .stat-card {
-    padding: 1.5rem;
+    padding: clamp(1rem, 2.5vw, 1.5rem);
     border-radius: 14px;
     background: var(--white);
     border: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 1rem;
 }
 
 .stat-icon {
-    width: 54px;
-    height: 54px;
+    width: 52px;
+    height: 52px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+    flex-shrink: 0;
 }
 
-/* Status Badges */
+/* Process Step Indicators */
+.process-step-num {
+    width: clamp(52px, 6vw, 64px);
+    height: clamp(52px, 6vw, 64px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: clamp(1.15rem, 2vw, 1.4rem);
+    margin: 0 auto 1rem auto;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.process-card {
+    padding: clamp(1rem, 2.5vw, 1.5rem);
+    border-radius: 14px;
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    height: 100%;
+    transition: transform 0.2s ease;
+}
+
+.process-card:hover {
+    transform: translateY(-3px);
+}
+
+/* Match Score Badge */
+.match-score-badge {
+    background: linear-gradient(135deg, #10B981, #16A34A);
+    color: var(--white);
+    font-weight: 800;
+    padding: 0.3rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+/* Badges */
 .badge-status {
     padding: 0.4rem 0.85rem;
     border-radius: 50px;
@@ -293,6 +518,7 @@ h1, h2, h3, h4, h5, h6 {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
+    white-space: nowrap;
 }
 
 .badge-approved { background-color: #DCFCE7; color: #166534; }
@@ -300,90 +526,53 @@ h1, h2, h3, h4, h5, h6 {
 .badge-pending { background-color: #FEF3C7; color: #92400E; }
 .badge-rejected { background-color: #FEE2E2; color: #991B1B; }
 
-/* Match compatibility meter */
-.match-score-badge {
-    background: linear-gradient(135deg, #10B981, #16A34A);
+/* ==========================================================================
+   8. FOOTER STYLING
+   ========================================================================== */
+
+.footer-section {
+    background-color: var(--dark-charcoal);
     color: var(--white);
-    font-weight: 800;
-    padding: 0.3rem 0.75rem;
-    border-radius: 8px;
-    font-size: 0.85rem;
+    padding: clamp(3rem, 5vw, 4.5rem) 0 2rem 0;
 }
 
-/* Responsive Table & Card fallbacks */
-@media (max-width: 991.98px) {
-    .app-sidebar {
-        transform: translateX(-100%);
-    }
-    .app-sidebar.show {
-        transform: translateX(0);
-    }
-    .app-main {
-        margin-left: 0;
-    }
-    .hero-title {
-        font-size: 2.2rem;
-    }
+.footer-link {
+    color: #9CA3AF;
+    text-decoration: none;
+    transition: color 0.2s ease, transform 0.2s ease;
+    display: inline-block;
 }
 
-@media (max-width: 767.98px) {
-    .table-responsive-stack tbody tr {
-        display: block;
-        margin-bottom: 1rem;
-        border: 1px solid var(--border-color);
-        border-radius: 10px;
-        padding: 0.75rem;
-        background: var(--white);
-    }
-    .table-responsive-stack td {
-        display: flex;
-        justify-content: space-between;
-        padding: 0.4rem 0;
-        border: none;
-    }
-    .table-responsive-stack td::before {
-        content: attr(data-label);
-        font-weight: 700;
-        color: var(--secondary-gray);
-    }
-    .table-responsive-stack thead {
-        display: none;
-    }
+.footer-link:hover,
+.footer-link:focus {
+    color: var(--emerald);
+    transform: translateX(3px);
 }
 
-/* Print Stylesheet for Allocation Letter */
-@media print {
-    .app-sidebar, .app-topbar, .btn, .no-print {
-        display: none !important;
-    }
-    .app-main {
-        margin-left: 0 !important;
-    }
-    .app-content {
-        padding: 0 !important;
-    }
-    .printable-letter {
-        border: none !important;
-        box-shadow: none !important;
-    }
+.footer-contact-item {
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
-/* Dedicated Non-scrolling Auth Screen */
+/* ==========================================================================
+   9. AUTHENTICATION SCREENS (LOGIN & REGISTER)
+   ========================================================================== */
+
 .auth-wrapper {
     min-height: 100vh;
-    height: 100vh;
+    height: auto;
     display: flex;
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, #F8FAFC 0%, #EDFDF2 100%);
-    overflow: hidden;
+    padding: clamp(2.5rem, 5vw, 4rem) 1rem 2rem 1rem;
     position: relative;
 }
 
 .btn-auth-back {
     position: absolute;
-    top: 1.25rem;
-    left: 1.5rem;
+    top: clamp(0.75rem, 2vw, 1.25rem);
+    left: clamp(0.75rem, 2vw, 1.5rem);
     z-index: 1050;
     color: var(--dark-charcoal);
     font-weight: 600;
@@ -413,12 +602,273 @@ h1, h2, h3, h4, h5, h6 {
     border-color: var(--primary-green);
 }
 
-@media (max-height: 720px) {
-    .auth-wrapper {
-        height: auto;
-        min-height: 100vh;
-        overflow-y: auto;
-        padding-top: 3.5rem;
-        padding-bottom: 1.5rem;
+/* ==========================================================================
+   10. DASHBOARD & APPLICATION LAYOUT
+   ========================================================================== */
+
+.app-wrapper {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    max-width: 100%;
+}
+
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(17, 24, 39, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 1035;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.sidebar-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.app-sidebar {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    color: #9CA3AF;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1040;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    height: 100vh;
+    max-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.app-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.app-sidebar::-webkit-scrollbar-track {
+    background: rgba(17, 24, 39, 0.95);
+}
+
+.app-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.app-sidebar::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-green);
+}
+
+.app-sidebar .sidebar-brand {
+    padding: 1.15rem 1.25rem;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--white);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    position: sticky;
+    top: 0;
+    background-color: var(--sidebar-bg);
+    z-index: 2;
+}
+
+.app-sidebar .nav-link {
+    color: #9CA3AF;
+    padding: 0.75rem 1.15rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: 8px;
+    margin: 0.15rem 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.app-sidebar .nav-link i {
+    font-size: 1.1rem;
+    width: 24px;
+}
+
+.app-sidebar .nav-link:hover,
+.app-sidebar .nav-link.active {
+    color: var(--white);
+    background-color: var(--primary-green);
+}
+
+.app-main {
+    flex: 1;
+    margin-left: 260px;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    max-width: 100%;
+    transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-topbar {
+    height: 70px;
+    background: var(--white);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 clamp(0.85rem, 2vw, 2rem);
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+}
+
+.btn-topbar-profile {
+    background-color: var(--white);
+    color: var(--dark-charcoal) !important;
+    border: 1px solid #D1D5DB !important;
+    padding: 0.45rem 0.95rem;
+    border-radius: 10px;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+    max-width: 220px;
+}
+
+.btn-topbar-profile:hover,
+.btn-topbar-profile:focus,
+.btn-topbar-profile:active,
+.btn-topbar-profile.show {
+    background-color: #F8FAFC !important;
+    color: var(--dark-charcoal) !important;
+    border-color: #9CA3AF !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.btn-topbar-profile .user-name-label {
+    color: var(--dark-charcoal) !important;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.app-content {
+    padding: clamp(1rem, 2.5vw, 2rem);
+    flex: 1;
+    max-width: 100%;
+}
+
+/* ==========================================================================
+   11. RESPONSIVE TABLES
+   ========================================================================== */
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 767.98px) {
+    .table-responsive-stack tbody tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 0.85rem;
+        background: var(--white);
+        box-shadow: var(--card-shadow);
+    }
+    .table-responsive-stack td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border: none;
+        border-bottom: 1px dashed var(--border-color);
+        font-size: 0.85rem;
+    }
+    .table-responsive-stack td:last-child {
+        border-bottom: none;
+    }
+    .table-responsive-stack td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--secondary-gray);
+        margin-right: 0.75rem;
+        text-align: left;
+    }
+    .table-responsive-stack thead {
+        display: none;
+    }
+}
+
+/* ==========================================================================
+   12. MEDIA QUERY BREAKPOINTS
+   ========================================================================== */
+
+/* Large screens and below (<= 991.98px) */
+@media (max-width: 991.98px) {
+    .app-sidebar {
+        transform: translateX(-100%);
+    }
+    .app-sidebar.show {
+        transform: translateX(0);
+    }
+    .app-main {
+        margin-left: 0;
+    }
+}
+
+/* Small screens (<= 575.98px) */
+@media (max-width: 575.98px) {
+    .stat-card {
+        padding: 1rem;
+    }
+    .stat-icon {
+        width: 44px;
+        height: 44px;
+        font-size: 1.2rem;
+    }
+    .card-custom {
+        border-radius: 12px;
+    }
+}
+
+/* Extra small screens (<= 375px) */
+@media (max-width: 375px) {
+    .btn {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+    .navbar-brand span {
+        font-size: 1.05rem;
+    }
+}
+
+/* ==========================================================================
+   13. PRINT STYLESHEET
+   ========================================================================== */
+
+@media print {
+    .app-sidebar,
+    .app-topbar,
+    .btn,
+    .no-print,
+    .sidebar-overlay {
+        display: none !important;
+    }
+    .app-main {
+        margin-left: 0 !important;
+    }
+    .app-content {
+        padding: 0 !important;
+    }
+    .printable-letter {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        max-width: 100% !important;
     }
 }

@@ -22,12 +22,12 @@ $flash = Helper::getFlash();
             <?php endif; ?>
 
             <div class="card-custom p-4 mb-4">
-                <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4 pb-3 border-bottom">
                     <div>
                         <h4 class="fw-bold mb-1 text-dark-green"><i class="fa-solid fa-file-signature me-2"></i> Application Review Portal</h4>
                         <p class="text-secondary fs-7 mb-0">Review submitted student placement preferences and approve for allocation.</p>
                     </div>
-                    <span class="badge bg-light-green text-dark-green fw-bold fs-7"><?= count($applications) ?> Submissions</span>
+                    <span class="badge bg-light-green text-dark-green fw-bold fs-7 align-self-start align-self-md-auto"><?= count($applications) ?> Submissions</span>
                 </div>
 
                 <div class="table-responsive">

@@ -22,12 +22,12 @@ $flash = Helper::getFlash();
             <?php endif; ?>
 
             <div class="card-custom p-4 mb-4">
-                <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4 pb-3 border-bottom">
                     <div>
                         <h4 class="fw-bold mb-1 text-dark-green"><i class="fa-solid fa-sitemap me-2"></i> Academic Departments Directory</h4>
                         <p class="text-secondary fs-7 mb-0">Institutions academic departments participating in the SIWES program.</p>
                     </div>
-                    <span class="badge bg-light-green text-dark-green fw-bold"><?= count($departments) ?> Departments</span>
+                    <span class="badge bg-light-green text-dark-green fw-bold align-self-start align-self-md-auto"><?= count($departments) ?> Departments</span>
                 </div>
 
                 <div class="row g-4">

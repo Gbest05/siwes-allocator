@@ -21,13 +21,13 @@ $flash = Helper::getFlash();
                 </div>
             <?php endif; ?>
 
-            <div class="card-custom p-4 max-w-800 mx-auto">
-                <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+            <div class="card-custom p-3 p-sm-4 max-w-800 mx-auto">
+                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4 pb-3 border-bottom">
                     <div>
-                        <h4 class="fw-bold mb-1 text-dark-green"><i class="fa-solid fa-bell me-2"></i> Notification Center</h4>
+                        <h4 class="fw-bold mb-1 text-dark-green fs-5"><i class="fa-solid fa-bell me-2"></i> Notification Center</h4>
                         <p class="text-secondary fs-7 mb-0">System alerts, application updates, and placement notifications.</p>
                     </div>
-                    <span class="badge bg-light-green text-dark-green fw-bold"><?= count($notifications) ?> Messages</span>
+                    <span class="badge bg-light-green text-dark-green fw-bold align-self-start align-self-md-auto"><?= count($notifications) ?> Messages</span>
                 </div>
 
                 <?php if (!empty($notifications)): ?>
@@ -35,12 +35,12 @@ $flash = Helper::getFlash();
                         <?php foreach ($notifications as $n): ?>
                             <div class="list-group-item px-0 py-3 border-bottom">
                                 <div class="d-flex align-items-start gap-3">
-                                    <div class="rounded-circle bg-light-green text-dark-green d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px;">
+                                    <div class="rounded-circle bg-light-green text-dark-green d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px;">
                                         <i class="fa-solid fa-circle-check fs-5"></i>
                                     </div>
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <h6 class="fw-bold text-dark mb-0"><?= htmlspecialchars($n['title']) ?></h6>
+                                    <div class="flex-grow-1 min-w-0">
+                                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-1 mb-1">
+                                            <h6 class="fw-bold text-dark mb-0 fs-7"><?= htmlspecialchars($n['title']) ?></h6>
                                             <small class="text-muted fs-8"><?= date('M d, Y H:i', strtotime($n['created_at'])) ?></small>
                                         </div>
                                         <p class="text-secondary fs-7 mb-0"><?= htmlspecialchars($n['message']) ?></p>

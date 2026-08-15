@@ -157,7 +157,7 @@ $flash = Helper::getFlash();
                                     <span class="match-score-badge"><?= $allocation['compatibility_score'] ?>% Compatibility Match</span>
                                 </div>
                             </div>
-                            <div class="mt-4 pt-3 border-top d-flex gap-2">
+                            <div class="mt-4 pt-3 border-top d-flex flex-wrap gap-2">
                                 <a href="<?= $baseUrl ?>/index.php?route=allocation-letter" class="btn btn-green btn-sm fw-bold">
                                     <i class="fa-solid fa-download me-1"></i> Download Official Letter
                                 </a>

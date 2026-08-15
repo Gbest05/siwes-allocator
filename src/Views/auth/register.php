@@ -19,13 +19,13 @@ $siteSettings = Helper::getAllSettings();
 
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-11 col-sm-10 col-md-9 col-lg-7 col-xl-6">
+            <div class="col-12 col-sm-11 col-md-9 col-lg-7 col-xl-6">
                 
                 <!-- Brand / Logo Link -->
                 <div class="text-center mb-2">
                     <a href="<?= $baseUrl ?>/index.php?route=home" class="d-inline-flex align-items-center gap-2 text-decoration-none text-dark-charcoal fw-bold fs-5">
                         <?php if (!empty($siteSettings['site_logo'])): ?>
-                            <img src="<?= $baseUrl ?>/<?= htmlspecialchars($siteSettings['site_logo']) ?>" alt="Logo" style="height: 32px; max-width: 110px; object-fit: contain;">
+                            <img src="<?= $baseUrl ?>/<?= htmlspecialchars($siteSettings['site_logo']) ?>" alt="Logo" class="navbar-brand-logo" style="height: 32px;">
                         <?php else: ?>
                             <div class="bg-primary-green text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
                                 <i class="fa-solid fa-graduation-cap fs-5"></i>
@@ -35,9 +35,9 @@ $siteSettings = Helper::getAllSettings();
                     </a>
                 </div>
 
-                <div class="card-custom p-4 bg-white shadow-sm border">
+                <div class="card-custom p-3 p-sm-4 bg-white shadow-sm border">
                     <div class="text-center mb-3">
-                        <h4 class="fw-bold text-dark-charcoal mb-0">Student Registration</h4>
+                        <h4 class="fw-bold text-dark-charcoal mb-1 fs-5">Student Registration</h4>
                         <p class="text-secondary fs-8 mb-0">Create your account to start your SIWES placement application</p>
                     </div>
 
@@ -52,22 +52,22 @@ $siteSettings = Helper::getAllSettings();
                         <input type="hidden" name="csrf_token" value="<?= Helper::csrfToken() ?>">
 
                         <div class="row g-2">
-                            <div class="col-sm-6">
+                            <div class="col-12 col-sm-6">
                                 <label for="full_name" class="form-label fw-semibold fs-8 mb-1">Full Name *</label>
                                 <input type="text" class="form-control form-control-sm" id="full_name" name="full_name" placeholder="e.g. Chidubem Chukwuma" required>
                             </div>
 
-                            <div class="col-sm-6">
+                            <div class="col-12 col-sm-6">
                                 <label for="matric_number" class="form-label fw-semibold fs-8 mb-1">Matriculation Number *</label>
                                 <input type="text" class="form-control form-control-sm" id="matric_number" name="matric_number" placeholder="e.g. F/ND/22/3210005" required>
                             </div>
 
-                            <div class="col-sm-6">
+                            <div class="col-12 col-sm-6">
                                 <label for="email" class="form-label fw-semibold fs-8 mb-1">Email Address *</label>
                                 <input type="email" class="form-control form-control-sm" id="email" name="email" placeholder="student@institution.edu.ng" required>
                             </div>
 
-                            <div class="col-sm-6">
+                            <div class="col-12 col-sm-6">
                                 <label for="phone" class="form-label fw-semibold fs-8 mb-1">Phone Number *</label>
                                 <input type="tel" class="form-control form-control-sm" id="phone" name="phone" placeholder="08123456789" required>
                             </div>
@@ -82,7 +82,7 @@ $siteSettings = Helper::getAllSettings();
                                 </select>
                             </div>
 
-                            <div class="col-sm-6">
+                            <div class="col-12 col-sm-6">
                                 <label for="programme" class="form-label fw-semibold fs-8 mb-1">Programme *</label>
                                 <select class="form-select form-select-sm" id="programme" name="programme" required>
                                     <option value="ND">National Diploma (ND)</option>
@@ -90,7 +90,7 @@ $siteSettings = Helper::getAllSettings();
                                 </select>
                             </div>
 
-                            <div class="col-sm-6">
+                            <div class="col-12 col-sm-6">
                                 <label for="level" class="form-label fw-semibold fs-8 mb-1">Level *</label>
                                 <select class="form-select form-select-sm" id="level" name="level" required>
                                     <option value="ND1">ND 1</option>
@@ -100,21 +100,21 @@ $siteSettings = Helper::getAllSettings();
                                 </select>
                             </div>
 
-                            <div class="col-sm-6">
+                            <div class="col-12 col-sm-6">
                                 <label for="reg_password" class="form-label fw-semibold fs-8 mb-1">Password *</label>
                                 <div class="input-group input-group-sm">
                                     <input type="password" class="form-control" id="reg_password" name="password" required>
-                                    <button class="btn btn-outline-secondary toggle-password" type="button" data-target="reg_password">
+                                    <button class="btn btn-outline-secondary toggle-password" type="button" data-target="reg_password" aria-label="Toggle password visibility">
                                         <i class="fa-solid fa-eye"></i>
                                     </button>
                                 </div>
                             </div>
 
-                            <div class="col-sm-6">
+                            <div class="col-12 col-sm-6">
                                 <label for="confirm_password" class="form-label fw-semibold fs-8 mb-1">Confirm Password *</label>
                                 <div class="input-group input-group-sm">
                                     <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
-                                    <button class="btn btn-outline-secondary toggle-password" type="button" data-target="confirm_password">
+                                    <button class="btn btn-outline-secondary toggle-password" type="button" data-target="confirm_password" aria-label="Toggle password visibility">
                                         <i class="fa-solid fa-eye"></i>
                                     </button>
                                 </div>

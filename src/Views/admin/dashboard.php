@@ -88,9 +88,9 @@ $extraJs = ['chart-config.js'];
 
             <!-- Recent User Registrations Table -->
             <div class="card-custom p-4">
-                <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4 pb-3 border-bottom">
                     <h5 class="fw-bold mb-0 text-dark-green"><i class="fa-solid fa-user-clock me-2"></i> Recent User Accounts</h5>
-                    <a href="<?= $baseUrl ?>/index.php?route=admin/users" class="btn btn-outline-green btn-sm fw-bold">Manage All Users</a>
+                    <a href="<?= $baseUrl ?>/index.php?route=admin/users" class="btn btn-outline-green btn-sm fw-bold align-self-start align-self-md-auto">Manage All Users</a>
                 </div>
 
                 <div class="table-responsive">

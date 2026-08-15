@@ -22,12 +22,12 @@ $flash = Helper::getFlash();
             <?php endif; ?>
 
             <div class="card-custom p-4 mb-4">
-                <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4 pb-3 border-bottom">
                     <div>
                         <h4 class="fw-bold mb-1 text-dark-green"><i class="fa-solid fa-building me-2"></i> Partner Organizations & Company Capacity</h4>
                         <p class="text-secondary fs-7 mb-0">Manage partner organizations, available placement slots, and industry contact persons.</p>
                     </div>
-                    <button class="btn btn-green fw-bold" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
+                    <button class="btn btn-green fw-bold align-self-start align-self-md-auto" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
                         <i class="fa-solid fa-plus me-1"></i> Register New Company
                     </button>
                 </div>
@@ -45,9 +45,9 @@ $flash = Helper::getFlash();
                                     <p class="text-secondary fs-7 mb-3"><i class="fa-solid fa-location-dot me-1 text-primary-green"></i> <?= htmlspecialchars($comp['address']) ?>, <?= htmlspecialchars($comp['city']) ?>, <?= htmlspecialchars($comp['state']) ?></p>
                                     
                                     <div class="p-3 bg-light rounded-3 mb-3">
-                                        <div class="d-flex justify-content-between align-items-center mb-1 fs-7">
+                                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-1 mb-1 fs-7">
                                             <span class="fw-bold text-dark">Placement Capacity</span>
-                                            <span class="fw-bold text-primary-green">Available Slots: <?= $comp['available_slots'] ?> / <?= $comp['total_capacity'] ?></span>
+                                            <span class="fw-bold text-primary-green">Slots: <?= $comp['available_slots'] ?> / <?= $comp['total_capacity'] ?></span>
                                         </div>
                                         <?php 
                                             $percent = round(($comp['available_slots'] / max($comp['total_capacity'], 1)) * 100);

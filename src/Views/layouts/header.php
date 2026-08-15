@@ -6,12 +6,16 @@ $siteName = Helper::getSetting('site_name', 'SIWES Allocation Management System'
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title><?= isset($pageTitle) ? htmlspecialchars($pageTitle) . ' - ' . htmlspecialchars($siteName) : htmlspecialchars($siteName) ?></title>
     
-    <!-- Meta Descriptions for SEO -->
+    <!-- Meta Descriptions & Mobile Web App Settings -->
     <meta name="description" content="Digital SIWES Allocation Management System for student industrial work experience registration, company placement, smart allocation, and monitoring.">
     <meta name="author" content="<?= htmlspecialchars(Helper::getSetting('institution_name', 'School of Technology & Applied Sciences')) ?>">
+    <meta name="theme-color" content="#166534">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="<?= (require __DIR__ . '/../../../config/app.php')['base_url'] ?>/images/favicon.svg">

@@ -27,7 +27,7 @@ $flash = Helper::getFlash();
                         <h4 class="fw-bold mb-1 text-dark-green"><i class="fa-solid fa-chart-column me-2"></i> Comprehensive SIWES Analytics & Reports</h4>
                         <p class="text-secondary fs-7 mb-0">Generate, view, and export student placement reports.</p>
                     </div>
-                    <div class="d-flex gap-2">
+                    <div class="d-flex flex-wrap gap-2">
                         <button onclick="window.print()" class="btn btn-outline-secondary btn-sm fw-bold">
                             <i class="fa-solid fa-print me-1"></i> Print Report
                         </button>

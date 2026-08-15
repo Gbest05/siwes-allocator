@@ -66,12 +66,12 @@ $flash = Helper::getFlash();
 
             <!-- Pending Allocations Suite Table -->
             <div class="card-custom p-4 mb-4">
-                <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4 border-bottom pb-3">
                     <div>
                         <h5 class="fw-bold mb-0 text-dark-green"><i class="fa-solid fa-diagram-project me-2"></i> Approved Applications Needing Allocation</h5>
                         <p class="text-secondary fs-7 mb-0">Use the smart matching score algorithm to allocate students to partner organizations.</p>
                     </div>
-                    <a href="<?= $baseUrl ?>/index.php?route=coordinator/allocation" class="btn btn-green btn-sm fw-bold">
+                    <a href="<?= $baseUrl ?>/index.php?route=coordinator/allocation" class="btn btn-green btn-sm fw-bold align-self-start align-self-md-auto">
                         <i class="fa-solid fa-sliders me-1"></i> Full Allocation Suite
                     </a>
                 </div>
