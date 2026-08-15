@@ -1,0 +1,390 @@
+/* 
+ * SIWES Allocation Management System - Custom Enterprise Design System
+ * Palette: Green (#16A34A), Dark Green (#166534), Emerald (#10B981), Charcoal (#111827)
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --primary-green: #16A34A;
+    --dark-green: #166534;
+    --emerald: #10B981;
+    --light-green: #DCFCE7;
+    --dark-charcoal: #111827;
+    --sidebar-bg: #111827;
+    --secondary-gray: #6B7280;
+    --bg-light: #F8FAFC;
+    --white: #FFFFFF;
+    --warning: #F59E0B;
+    --danger: #DC2626;
+    --border-color: #E2E8F0;
+    --card-shadow: 0 4px 20px -2px rgba(17, 24, 39, 0.05);
+    --green-gradient: linear-gradient(135deg, #166534 0%, #16A34A 100%);
+    --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: var(--bg-light);
+    color: var(--dark-charcoal);
+    overflow-x: hidden;
+    line-height: 1.6;
+}
+
+/* Typography Overrides */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    color: var(--dark-charcoal);
+    letter-spacing: -0.02em;
+}
+
+.text-primary-green { color: var(--primary-green) !important; }
+.text-dark-green { color: var(--dark-green) !important; }
+.bg-primary-green { background-color: var(--primary-green) !important; color: white !important; }
+.bg-dark-green { background-color: var(--dark-green) !important; color: white !important; }
+.bg-light-green { background-color: var(--light-green) !important; color: var(--dark-green) !important; }
+.bg-dark-charcoal { background-color: var(--dark-charcoal) !important; color: white !important; }
+.bg-emerald { background-color: var(--emerald) !important; color: white !important; }
+
+/* Custom Buttons */
+.btn-green {
+    background: var(--green-gradient);
+    color: var(--white);
+    border: none;
+    font-weight: 600;
+    padding: 0.625rem 1.35rem;
+    border-radius: 10px;
+    transition: all 0.25s ease-in-out;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+}
+
+.btn-green:hover {
+    background: linear-gradient(135deg, #14532D 0%, #15803D 100%);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(22, 163, 74, 0.35);
+}
+
+.btn-outline-green {
+    border: 2px solid var(--primary-green);
+    color: var(--primary-green);
+    font-weight: 600;
+    padding: 0.55rem 1.25rem;
+    border-radius: 10px;
+    background: transparent;
+    transition: all 0.25s ease-in-out;
+}
+
+.btn-outline-green:hover {
+    background-color: var(--primary-green);
+    color: var(--white);
+    transform: translateY(-2px);
+}
+
+/* Landing Page Styles */
+.navbar-siwes {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 0;
+    transition: all 0.3s ease;
+}
+
+.navbar-brand {
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: var(--dark-charcoal) !important;
+}
+
+.navbar-brand span {
+    color: var(--primary-green);
+}
+
+.hero-section {
+    position: relative;
+    padding: 8rem 0 6rem 0;
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.88), rgba(22, 101, 52, 0.92)), url('../images/hero.jpg') center/cover no-repeat;
+    color: var(--white);
+}
+
+.hero-title {
+    font-size: 3.2rem;
+    font-weight: 800;
+    line-height: 1.15;
+    color: var(--white);
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    color: #E2E8F0;
+    max-width: 620px;
+}
+
+/* Dashboard Layout */
+.app-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+.app-sidebar {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    color: #9CA3AF;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1040;
+    transition: all 0.3s ease;
+    height: 100vh;
+    max-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Sleek custom scrollbars for sidebar */
+.app-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.app-sidebar::-webkit-scrollbar-track {
+    background: rgba(17, 24, 39, 0.95);
+}
+
+.app-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.app-sidebar::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-green);
+}
+
+.app-sidebar .sidebar-brand {
+    padding: 1.25rem 1.25rem;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--white);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    position: sticky;
+    top: 0;
+    background-color: var(--sidebar-bg);
+    z-index: 2;
+}
+
+.app-sidebar .nav-link {
+    color: #9CA3AF;
+    padding: 0.75rem 1.15rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: 8px;
+    margin: 0.15rem 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.app-sidebar .nav-link i {
+    font-size: 1.1rem;
+    width: 24px;
+}
+
+.app-sidebar .nav-link:hover, .app-sidebar .nav-link.active {
+    color: var(--white);
+    background-color: var(--primary-green);
+}
+
+.app-main {
+    flex: 1;
+    margin-left: 260px;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    transition: all 0.3s ease;
+}
+
+.app-topbar {
+    height: 70px;
+    background: var(--white);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+}
+
+/* High-contrast Topbar Profile Button */
+.btn-topbar-profile {
+    background-color: var(--white);
+    color: var(--dark-charcoal) !important;
+    border: 1px solid #D1D5DB !important;
+    padding: 0.45rem 0.95rem;
+    border-radius: 10px;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+}
+
+.btn-topbar-profile:hover,
+.btn-topbar-profile:focus,
+.btn-topbar-profile:active,
+.btn-topbar-profile.show {
+    background-color: #F8FAFC !important;
+    color: var(--dark-charcoal) !important;
+    border-color: #9CA3AF !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.btn-topbar-profile .user-name-label {
+    color: var(--dark-charcoal) !important;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.app-content {
+    padding: 2rem;
+    flex: 1;
+}
+
+/* Custom Cards & Panels */
+.card-custom {
+    background: var(--white);
+    border-radius: 14px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-custom:hover {
+    box-shadow: 0 8px 24px -4px rgba(17, 24, 39, 0.08);
+}
+
+.stat-card {
+    padding: 1.5rem;
+    border-radius: 14px;
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.stat-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+/* Status Badges */
+.badge-status {
+    padding: 0.4rem 0.85rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.badge-approved { background-color: #DCFCE7; color: #166534; }
+.badge-allocated { background-color: #D1FAE5; color: #065F46; }
+.badge-pending { background-color: #FEF3C7; color: #92400E; }
+.badge-rejected { background-color: #FEE2E2; color: #991B1B; }
+
+/* Match compatibility meter */
+.match-score-badge {
+    background: linear-gradient(135deg, #10B981, #16A34A);
+    color: var(--white);
+    font-weight: 800;
+    padding: 0.3rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+/* Responsive Table & Card fallbacks */
+@media (max-width: 991.98px) {
+    .app-sidebar {
+        transform: translateX(-100%);
+    }
+    .app-sidebar.show {
+        transform: translateX(0);
+    }
+    .app-main {
+        margin-left: 0;
+    }
+    .hero-title {
+        font-size: 2.2rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .table-responsive-stack tbody tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 0.75rem;
+        background: var(--white);
+    }
+    .table-responsive-stack td {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.4rem 0;
+        border: none;
+    }
+    .table-responsive-stack td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--secondary-gray);
+    }
+    .table-responsive-stack thead {
+        display: none;
+    }
+}
+
+/* Print Stylesheet for Allocation Letter */
+@media print {
+    .app-sidebar, .app-topbar, .btn, .no-print {
+        display: none !important;
+    }
+    .app-main {
+        margin-left: 0 !important;
+    }
+    .app-content {
+        padding: 0 !important;
+    }
+    .printable-letter {
+        border: none !important;
+        box-shadow: none !important;
+    }
+}
+
+/* Dedicated Non-scrolling Auth Screen */
+.auth-wrapper {
+    min-height: 100vh;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #F8FAFC 0%, #EDFDF2 100%);
+    overflow: hidden;
+}
+
+@media (max-height: 720px) {
+    .auth-wrapper {
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+    }
+}
