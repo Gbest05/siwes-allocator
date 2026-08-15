@@ -1,11 +1,17 @@
 <?php
+// Start output buffering to prevent headers sent issues
+ob_start();
 
+use App\Core\Auth;
 use App\Core\Router;
 
 require_once __DIR__ . '/../src/Core/Auth.php';
 require_once __DIR__ . '/../src/Core/Database.php';
 require_once __DIR__ . '/../src/Core/Helper.php';
 require_once __DIR__ . '/../src/Core/Router.php';
+
+// Initialize session immediately before any view rendering
+Auth::initSession();
 
 // Controllers Autoload
 require_once __DIR__ . '/../src/Controllers/LandingController.php';

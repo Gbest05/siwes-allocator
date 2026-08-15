@@ -6,8 +6,12 @@ class Auth {
 
     public static function initSession(): void {
         if (session_status() === PHP_SESSION_NONE) {
-            session_name('SIWES_SESS_ID');
-            session_start();
+            if (!headers_sent()) {
+                session_name('SIWES_SESS_ID');
+                @session_start();
+            } else {
+                @session_start();
+            }
         }
     }
 
