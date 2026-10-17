@@ -15,7 +15,8 @@ class Database {
             try {
                 // Primary Connection Attempt: PostgreSQL PDO
                 if ($config['driver'] === 'pgsql') {
-                    $dsn = "pgsql:host={$config['host']};port={$config['port']};dbname={$config['dbname']}";
+                    $ssl = !empty($config['sslmode']) ? ";sslmode={$config['sslmode']}" : "";
+                    $dsn = "pgsql:host={$config['host']};port={$config['port']};dbname={$config['dbname']}{$ssl}";
                     self::$instance = new PDO($dsn, $config['username'], $config['password'], $config['options']);
                     self::initializePostgresSchema(self::$instance);
                 } else {
