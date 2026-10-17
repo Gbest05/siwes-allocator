@@ -30,6 +30,11 @@ if ($databaseUrl) {
                 $sslmode = $queryParams['sslmode'];
             }
         }
+
+        // Neon PostgreSQL requires sslmode=require
+        if (str_contains($host, 'neon.tech') && empty($sslmode)) {
+            $sslmode = 'require';
+        }
     }
 }
 

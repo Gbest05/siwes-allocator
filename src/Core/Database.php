@@ -233,23 +233,24 @@ class Database {
      */
     private static function ensureSupervisorSchema(PDO $db): void {
         try {
-            // 1. Create supervisors table if not exists
-            $db->exec("
-                CREATE TABLE IF NOT EXISTS supervisors (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
-                    department_id INTEGER REFERENCES departments(id) ON DELETE SET NULL,
-                    staff_id TEXT UNIQUE,
-                    phone TEXT,
-                    designation TEXT DEFAULT 'Institution Supervisor',
-                    max_capacity INTEGER DEFAULT 20,
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-                );
-            ");
-
-            // 2. Add supervisor columns to students table if missing
             $driver = $db->getAttribute(PDO::ATTR_DRIVER_NAME);
+
+            // 1. Create supervisors table if not exists with driver-appropriate syntax
             if ($driver === 'sqlite') {
+                $db->exec("
+                    CREATE TABLE IF NOT EXISTS supervisors (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+                        department_id INTEGER REFERENCES departments(id) ON DELETE SET NULL,
+                        staff_id TEXT UNIQUE,
+                        phone TEXT,
+                        designation TEXT DEFAULT 'Institution Supervisor',
+                        max_capacity INTEGER DEFAULT 20,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    );
+                ");
+
+                // 2. Add supervisor columns to students table if missing
                 $cols = $db->query("PRAGMA table_info(students)")->fetchAll(PDO::FETCH_COLUMN, 1);
                 if (!in_array('supervisor_id', $cols)) {
                     $db->exec("ALTER TABLE students ADD COLUMN supervisor_id INTEGER REFERENCES users(id) ON DELETE SET NULL");
@@ -257,8 +258,23 @@ class Database {
                     $db->exec("ALTER TABLE students ADD COLUMN supervisor_assigned_by INTEGER REFERENCES users(id) ON DELETE SET NULL");
                 }
             } else {
-                // PostgreSQL
+                // PostgreSQL (e.g. Neon PostgreSQL, Render PostgreSQL)
                 $db->exec("
+                    CREATE TABLE IF NOT EXISTS supervisors (
+                        id SERIAL PRIMARY KEY,
+                        user_id INT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+                        department_id INT REFERENCES departments(id) ON DELETE SET NULL,
+                        staff_id VARCHAR(100) UNIQUE,
+                        phone VARCHAR(50),
+                        designation VARCHAR(100) DEFAULT 'Institution Supervisor',
+                        max_capacity INT DEFAULT 20,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                    );
+                    ALTER TABLE supervisors ADD COLUMN IF NOT EXISTS department_id INT REFERENCES departments(id) ON DELETE SET NULL;
+                    ALTER TABLE supervisors ADD COLUMN IF NOT EXISTS staff_id VARCHAR(100) UNIQUE;
+                    ALTER TABLE supervisors ADD COLUMN IF NOT EXISTS max_capacity INT DEFAULT 20;
+                    ALTER TABLE supervisors ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+
                     ALTER TABLE students ADD COLUMN IF NOT EXISTS supervisor_id INT REFERENCES users(id) ON DELETE SET NULL;
                     ALTER TABLE students ADD COLUMN IF NOT EXISTS supervisor_assigned_at TIMESTAMP WITH TIME ZONE DEFAULT NULL;
                     ALTER TABLE students ADD COLUMN IF NOT EXISTS supervisor_assigned_by INT REFERENCES users(id) ON DELETE SET NULL;
@@ -273,21 +289,21 @@ class Database {
                 // Supervisor 1: Engr. Tunde Bakare
                 $db->exec("INSERT INTO users (full_name, email, password_hash, role) VALUES 
                     ('Engr. Tunde Bakare', 'supervisor1@siwesp.edu.ng', '{$hash}', 'supervisor')");
-                $sup1UserId = (int)$db->lastInsertId();
+                $sup1UserId = (int)$db->query("SELECT id FROM users WHERE email = 'supervisor1@siwesp.edu.ng'")->fetchColumn();
                 $db->exec("INSERT INTO supervisors (user_id, department_id, staff_id, phone, designation) VALUES 
                     ({$sup1UserId}, 1, 'SUP/COM/001', '08031234567', 'Senior Lecturer & SIWES Supervisor')");
 
                 // Supervisor 2: Dr. Mrs. Nkechi Egwu
                 $db->exec("INSERT INTO users (full_name, email, password_hash, role) VALUES 
                     ('Dr. Mrs. Nkechi Egwu', 'supervisor2@siwesp.edu.ng', '{$hash}', 'supervisor')");
-                $sup2UserId = (int)$db->lastInsertId();
+                $sup2UserId = (int)$db->query("SELECT id FROM users WHERE email = 'supervisor2@siwesp.edu.ng'")->fetchColumn();
                 $db->exec("INSERT INTO supervisors (user_id, department_id, staff_id, phone, designation) VALUES 
                     ({$sup2UserId}, 2, 'SUP/EEE/002', '08029876543', 'Principal Supervisor')");
 
                 // Supervisor 3: Dr. Farouk Umar
                 $db->exec("INSERT INTO users (full_name, email, password_hash, role) VALUES 
                     ('Dr. Farouk Umar', 'supervisor3@siwesp.edu.ng', '{$hash}', 'supervisor')");
-                $sup3UserId = (int)$db->lastInsertId();
+                $sup3UserId = (int)$db->query("SELECT id FROM users WHERE email = 'supervisor3@siwesp.edu.ng'")->fetchColumn();
                 $db->exec("INSERT INTO supervisors (user_id, department_id, staff_id, phone, designation) VALUES 
                     ({$sup3UserId}, 3, 'SUP/IFT/003', '08055512345', 'SIWES Academic Supervisor')");
             }
@@ -310,9 +326,9 @@ class Database {
                     $exists = $db->query("SELECT id FROM users WHERE email = '{$st['email']}'")->fetch();
                     if (!$exists) {
                         $db->exec("INSERT INTO users (full_name, email, password_hash, role) VALUES ('{$st['name']}', '{$st['email']}', '{$hash}', 'student')");
-                        $uId = (int)$db->lastInsertId();
+                        $uId = (int)$db->query("SELECT id FROM users WHERE email = '{$st['email']}'")->fetchColumn();
                         $db->exec("INSERT INTO students (user_id, matric_number, department_id, programme, level, phone, address) VALUES ({$uId}, '{$st['matric']}', {$st['dept']}, '{$st['prog']}', '{$st['level']}', '{$st['phone']}', 'Campus Hall of Residence')");
-                        $sId = (int)$db->lastInsertId();
+                        $sId = (int)$db->query("SELECT id FROM students WHERE user_id = {$uId}")->fetchColumn();
                         $db->exec("INSERT INTO siwes_applications (student_id, preferred_industry, preferred_location, status, notes) VALUES ({$sId}, '{$st['industry']}', '{$st['location']}', 'Approved', 'Ready for supervisor and placement allocation.')");
                     }
                 }
