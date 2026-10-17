@@ -44,8 +44,10 @@ $router->get('admin/dashboard', [App\Controllers\AdminController::class, 'dashbo
 // 3. Student Workflow Routes
 $router->get('student/application', [App\Controllers\StudentController::class, 'application']);
 $router->post('student/application', [App\Controllers\StudentController::class, 'submitApplication']);
+$router->post('student/application/delete', [App\Controllers\StudentController::class, 'deleteApplication']);
 $router->get('student/documents', [App\Controllers\DocumentController::class, 'index']);
 $router->post('student/documents', [App\Controllers\DocumentController::class, 'upload']);
+$router->post('student/documents/delete', [App\Controllers\DocumentController::class, 'delete']);
 $router->get('student/allocation', [App\Controllers\StudentController::class, 'viewAllocation']);
 $router->get('allocation-letter', [App\Controllers\StudentController::class, 'downloadLetter']);
 
@@ -58,6 +60,14 @@ $router->post('coordinator/allocate', [App\Controllers\AllocationController::cla
 $router->post('coordinator/reassign', [App\Controllers\AllocationController::class, 'reassign']);
 $router->get('coordinator/companies', [App\Controllers\CompanyController::class, 'index']);
 $router->post('coordinator/companies', [App\Controllers\CompanyController::class, 'store']);
+$router->post('coordinator/companies/update', [App\Controllers\CompanyController::class, 'update']);
+$router->post('coordinator/companies/toggle-status', [App\Controllers\CompanyController::class, 'toggleStatus']);
+$router->post('coordinator/companies/delete', [App\Controllers\CompanyController::class, 'delete']);
+
+$router->get('admin/companies', [App\Controllers\CompanyController::class, 'index']);
+$router->post('admin/companies/update', [App\Controllers\CompanyController::class, 'update']);
+$router->post('admin/companies/toggle-status', [App\Controllers\CompanyController::class, 'toggleStatus']);
+$router->post('admin/companies/delete', [App\Controllers\CompanyController::class, 'delete']);
 $router->get('coordinator/supervisors', [App\Controllers\CoordinatorController::class, 'supervisors']);
 $router->post('coordinator/assign-supervisor', [App\Controllers\CoordinatorController::class, 'assignSupervisor']);
 $router->post('coordinator/auto-distribute-supervisors', [App\Controllers\CoordinatorController::class, 'autoDistributeSupervisors']);
@@ -70,6 +80,7 @@ $router->get('supervisor/students', [App\Controllers\SupervisorController::class
 $router->post('supervisor/review-application', [App\Controllers\SupervisorController::class, 'reviewApplication']);
 $router->post('supervisor/allocate-placement', [App\Controllers\SupervisorController::class, 'allocatePlacement']);
 $router->post('supervisor/auto-assign-placements', [App\Controllers\SupervisorController::class, 'autoAssignPlacements']);
+$router->post('supervisor/send-notification', [App\Controllers\SupervisorController::class, 'sendNotification']);
 
 // 6. Admin & Management Routes
 $router->get('admin/users', [App\Controllers\AdminController::class, 'users']);

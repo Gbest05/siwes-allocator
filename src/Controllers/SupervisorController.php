@@ -562,4 +562,89 @@ class SupervisorController {
 
         Helper::redirect($redirect);
     }
+
+    /**
+     * Supervisor: Send Custom Notification Message to Assigned Student(s)
+     */
+    public function sendNotification(): void {
+        Auth::requireRole('supervisor');
+        if (!Helper::verifyCsrf($_POST['csrf_token'] ?? '')) {
+            Helper::setFlash('danger', 'Invalid security token.');
+            Helper::redirect('supervisor/dashboard');
+        }
+
+        $supervisorId = Auth::id();
+        $studentId = (int)($_POST['student_id'] ?? 0); // specific student ID or 0 for broadcast
+        $title = Helper::sanitize($_POST['title'] ?? 'Notice from Supervisor');
+        $message = Helper::sanitize($_POST['message'] ?? '');
+        $type = Helper::sanitize($_POST['type'] ?? 'info');
+        $redirect = Helper::sanitize($_POST['redirect_to'] ?? 'supervisor/dashboard');
+
+        if (empty($message)) {
+            Helper::setFlash('warning', 'Please provide a message for the notification.');
+            Helper::redirect($redirect);
+        }
+
+        $db = Database::getInstance();
+        $sup = $db->query("SELECT full_name FROM users WHERE id = {$supervisorId}")->fetch();
+        $supName = $sup['full_name'] ?? 'Supervisor';
+
+        if ($studentId > 0) {
+            // Verify student is assigned to this supervisor
+            $stStmt = $db->prepare("
+                SELECT s.id, s.user_id, u.full_name 
+                FROM students s 
+                JOIN users u ON s.user_id = u.id 
+                WHERE s.id = :sid AND s.supervisor_id = :sup_id
+            ");
+            $stStmt->execute(['sid' => $studentId, 'sup_id' => $supervisorId]);
+            $student = $stStmt->fetch();
+
+            if (!$student) {
+                Helper::setFlash('danger', 'Access denied. This student is not in your supervision roster.');
+                Helper::redirect($redirect);
+            }
+
+            $notifTitle = "Supervisor Message: {$title}";
+            $db->prepare("
+                INSERT INTO notifications (user_id, title, message, type)
+                VALUES (:uid, :title, :msg, :type)
+            ")->execute([
+                'uid'   => $student['user_id'],
+                'title' => $notifTitle,
+                'msg'   => "From Supervisor {$supName}: {$message}",
+                'type'  => $type
+            ]);
+
+            Helper::setFlash('success', "Message sent to {$student['full_name']} successfully!");
+        } else {
+            // Broadcast to all students assigned to this supervisor
+            $students = $db->query("
+                SELECT s.user_id, u.full_name 
+                FROM students s 
+                JOIN users u ON s.user_id = u.id 
+                WHERE s.supervisor_id = {$supervisorId}
+            ")->fetchAll();
+
+            if (empty($students)) {
+                Helper::setFlash('warning', 'You do not have any students assigned to your roster.');
+                Helper::redirect($redirect);
+            }
+
+            $notifTitle = "Supervisor Broadcast: {$title}";
+            $insert = $db->prepare("INSERT INTO notifications (user_id, title, message, type) VALUES (:uid, :title, :msg, :type)");
+            foreach ($students as $st) {
+                $insert->execute([
+                    'uid'   => $st['user_id'],
+                    'title' => $notifTitle,
+                    'msg'   => "From Supervisor {$supName}: {$message}",
+                    'type'  => $type
+                ]);
+            }
+
+            Helper::setFlash('success', "Broadcast notification sent to all " . count($students) . " assigned students.");
+        }
+
+        Helper::redirect($redirect);
+    }
 }

@@ -104,6 +104,19 @@ class StudentController {
         $application = $db->query("SELECT * FROM siwes_applications WHERE student_id = {$student['id']}")->fetch();
         $documents = $db->query("SELECT * FROM documents WHERE student_id = {$student['id']} ORDER BY uploaded_at DESC")->fetchAll();
 
+        // Check if student has already been allocated
+        $allocStmt = $db->prepare("
+            SELECT a.*, c.name AS company_name, c.address AS company_address, c.city AS company_city,
+                   c.state AS company_state, c.industry AS company_industry, c.contact_person, c.phone AS company_phone,
+                   c.email AS company_email
+            FROM allocations a
+            JOIN companies c ON a.company_id = c.id
+            WHERE a.student_id = :sid AND a.status != 'Cancelled'
+            LIMIT 1
+        ");
+        $allocStmt->execute(['sid' => $student['id']]);
+        $allocation = $allocStmt->fetch() ?: null;
+
         // Supervisor details if attached
         $supervisor = null;
         if (!empty($student['supervisor_id'])) {
@@ -143,14 +156,26 @@ class StudentController {
         $studentStmt->execute(['uid' => $userId]);
         $student = $studentStmt->fetch();
 
+        // Check if student has already been allocated to a company
+        $allocCheck = $db->query("SELECT id FROM allocations WHERE student_id = {$student['id']} AND status != 'Cancelled'")->fetch();
+        $app = $db->query("SELECT * FROM siwes_applications WHERE student_id = {$student['id']}")->fetch();
+        $existingStatus = $app['status'] ?? 'Draft';
+
+        if ($allocCheck || ($app && $existingStatus === 'Allocated')) {
+            Helper::setFlash('danger', 'Your SIWES placement has already been officially allocated. You cannot modify or re-submit your application. Please contact your institutional supervisor for any complaints or adjustments.');
+            Helper::redirect('student/application');
+        }
+
         $action = Helper::sanitize($_POST['action'] ?? 'final_submit');
         $industryPref = Helper::sanitize($_POST['preferred_industry'] ?? '');
         $locationPref = Helper::sanitize($_POST['preferred_location'] ?? '');
         $notes = Helper::sanitize($_POST['notes'] ?? '');
 
-        // Fetch existing application if any
-        $app = $db->query("SELECT * FROM siwes_applications WHERE student_id = {$student['id']}")->fetch();
-        $existingStatus = $app['status'] ?? 'Draft';
+        // Rule: Student can only drop SIWES application once. If active application exists and student hasn't deleted it, block re-submission.
+        if ($action !== 'save_preferences' && $app && in_array($existingStatus, ['Submitted', 'Approved'], true)) {
+            Helper::setFlash('warning', 'You have already submitted an active SIWES application. You can only submit once. If you need to make changes, please delete your previous application below to re-submit before placement allocation.');
+            Helper::redirect('student/application');
+        }
 
         if (empty($industryPref) || empty($locationPref)) {
             // Check if existing application has preferences
@@ -253,7 +278,7 @@ class StudentController {
         ]);
 
         Helper::setFlash('success', "Your SIWES application and documents have been submitted successfully to {$supervisorName} and the coordinator!");
-        Helper::redirect('dashboard');
+        Helper::redirect('student/application');
     }
 
     public function viewAllocation(): void {
@@ -305,5 +330,39 @@ class StudentController {
         }
 
         require __DIR__ . '/../Views/student/allocation_letter.php';
+    }
+
+    public function deleteApplication(): void {
+        Auth::requireRole('student');
+        if (!Helper::verifyCsrf($_POST['csrf_token'] ?? '')) {
+            Helper::setFlash('danger', 'Invalid security token.');
+            Helper::redirect('student/application');
+        }
+
+        $userId = Auth::id();
+        $db = Database::getInstance();
+        $student = $db->query("SELECT id FROM students WHERE user_id = {$userId}")->fetch();
+        if (!$student) {
+            Helper::setFlash('danger', 'Student record not found.');
+            Helper::redirect('dashboard');
+        }
+
+        // Check if student has already been allocated
+        $alloc = $db->query("SELECT id FROM allocations WHERE student_id = {$student['id']} AND status != 'Cancelled'")->fetch();
+        $app = $db->query("SELECT id, status FROM siwes_applications WHERE student_id = {$student['id']}")->fetch();
+
+        if ($alloc || ($app && ($app['status'] ?? '') === 'Allocated')) {
+            Helper::setFlash('danger', 'Action Denied: Your placement has already been officially allocated to a partner organization. You cannot drop or delete your application. If you have any inquiries or complaints, please contact your institutional supervisor.');
+            Helper::redirect('student/application');
+        }
+
+        if ($app) {
+            $db->prepare("DELETE FROM siwes_applications WHERE id = :id")->execute(['id' => $app['id']]);
+            Helper::setFlash('success', 'Your previous SIWES application has been removed. You can now submit a fresh application with your updated placement preferences and documents.');
+        } else {
+            Helper::setFlash('info', 'No active application found to delete.');
+        }
+
+        Helper::redirect('student/application');
     }
 }

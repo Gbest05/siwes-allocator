@@ -72,7 +72,21 @@ class Auth {
         $allowed = is_array($roles) ? $roles : [$roles];
         if (!in_array(self::role(), $allowed, true)) {
             Helper::setFlash('danger', 'Access denied. You do not have permission to view this section.');
-            Helper::redirect('dashboard');
+            $role = self::role();
+            switch ($role) {
+                case 'admin':
+                    Helper::redirect('admin/dashboard');
+                    break;
+                case 'coordinator':
+                    Helper::redirect('coordinator/dashboard');
+                    break;
+                case 'supervisor':
+                    Helper::redirect('supervisor/dashboard');
+                    break;
+                default:
+                    Helper::redirect('dashboard');
+                    break;
+            }
         }
     }
 }

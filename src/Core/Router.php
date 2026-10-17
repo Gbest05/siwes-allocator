@@ -17,14 +17,26 @@ class Router {
         $method = $_SERVER['REQUEST_METHOD'];
         
         // Resolve route from GET parameter or Request URI
-        $route = $_GET['route'] ?? null;
-        if (!$route) {
+        $rawRoute = $_GET['route'] ?? null;
+        if (!$rawRoute) {
             $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
             $scriptName = dirname($_SERVER['SCRIPT_NAME']);
-            $route = trim(str_replace($scriptName, '', $uri), '/');
+            $rawRoute = trim(str_replace($scriptName, '', $uri), '/');
         }
 
-        $route = $route ? trim($route, '/') : 'home';
+        if ($rawRoute) {
+            $parsed = parse_url($rawRoute);
+            $route = trim($parsed['path'] ?? '', '/');
+            if (!empty($parsed['query'])) {
+                parse_str($parsed['query'], $extraParams);
+                $_GET = array_merge($_GET, $extraParams);
+                $_REQUEST = array_merge($_REQUEST, $extraParams);
+            }
+        } else {
+            $route = 'home';
+        }
+
+        $route = $route ?: 'home';
 
         if (isset($this->routes[$method][$route])) {
             [$controllerClass, $action] = $this->routes[$method][$route];

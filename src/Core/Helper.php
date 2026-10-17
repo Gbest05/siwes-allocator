@@ -40,8 +40,22 @@ class Helper {
     }
 
     public static function redirect(string $url): void {
-        $baseUrl = require __DIR__ . '/../../config/app.php';
-        $fullUrl = (strpos($url, 'http') === 0) ? $url : rtrim($baseUrl['base_url'], '/') . '/index.php?route=' . ltrim($url, '/');
+        if (strpos($url, 'http://') === 0 || strpos($url, 'https://') === 0) {
+            header("Location: {$url}");
+            exit;
+        }
+        $baseUrl = (require __DIR__ . '/../../config/app.php')['base_url'];
+        
+        // Parse $url in case it contains query parameters like 'student/application?step=2'
+        $parsed = parse_url($url);
+        $route = trim($parsed['path'] ?? '', '/');
+        $query = $parsed['query'] ?? '';
+
+        $fullUrl = rtrim($baseUrl, '/') . '/index.php?route=' . $route;
+        if (!empty($query)) {
+            $fullUrl .= '&' . $query;
+        }
+
         header("Location: {$fullUrl}");
         exit;
     }

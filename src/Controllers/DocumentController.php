@@ -92,4 +92,58 @@ class DocumentController {
 
         Helper::redirect($redirectTo);
     }
+
+    public function delete(): void {
+        Auth::requireRole(['student', 'coordinator', 'admin']);
+        if (!Helper::verifyCsrf($_POST['csrf_token'] ?? '')) {
+            Helper::setFlash('danger', 'Invalid security token.');
+            Helper::redirect('student/documents');
+        }
+
+        $id = (int)($_POST['document_id'] ?? 0);
+        $redirectTo = !empty($_POST['redirect_to']) ? Helper::sanitize($_POST['redirect_to']) : 'student/documents';
+
+        if ($id <= 0) {
+            Helper::setFlash('warning', 'Invalid document ID.');
+            Helper::redirect($redirectTo);
+        }
+
+        $db = Database::getInstance();
+        $userId = Auth::id();
+
+        if (Auth::role() === 'student') {
+            $student = $db->query("SELECT id FROM students WHERE user_id = {$userId}")->fetch();
+            if (!$student) {
+                Helper::setFlash('danger', 'Student record not found.');
+                Helper::redirect($redirectTo);
+            }
+
+            // Prevent document deletion if already allocated
+            $alloc = $db->query("SELECT id FROM allocations WHERE student_id = {$student['id']} AND status != 'Cancelled'")->fetch();
+            if ($alloc) {
+                Helper::setFlash('danger', 'Action Denied: You cannot delete documents after your placement has been allocated.');
+                Helper::redirect($redirectTo);
+            }
+
+            $doc = $db->query("SELECT * FROM documents WHERE id = {$id} AND student_id = {$student['id']}")->fetch();
+        } else {
+            $doc = $db->query("SELECT * FROM documents WHERE id = {$id}")->fetch();
+        }
+
+        if (!$doc) {
+            Helper::setFlash('danger', 'Document not found or access denied.');
+            Helper::redirect($redirectTo);
+        }
+
+        // Unlink physical file if exists
+        $filePath = __DIR__ . '/../../public/' . $doc['file_path'];
+        if (file_exists($filePath)) {
+            @unlink($filePath);
+        }
+
+        $db->prepare("DELETE FROM documents WHERE id = :id")->execute(['id' => $id]);
+        Helper::setFlash('success', "Document '{$doc['file_name']}' removed successfully.");
+        Helper::redirect($redirectTo);
+    }
 }
+

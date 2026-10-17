@@ -31,7 +31,10 @@ $flash = Helper::getFlash();
                             Complete roster of students assigned to you. Review submitted documents, approve applications, and assign company placements.
                         </p>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <button type="button" class="btn btn-outline-success btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#modalBroadcastMessage">
+                            <i class="fa-solid fa-bullhorn me-1"></i> Send Notice to All
+                        </button>
                         <button type="button" class="btn btn-warning btn-sm fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#modalAutoAssignAll">
                             <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Auto-Assign Unplaced
                         </button>
@@ -339,6 +342,42 @@ $flash = Helper::getFlash();
 
                                                     </div>
 
+                                                    <!-- Section: Send Direct Notification Message to Student -->
+                                                    <div class="p-3 border rounded-3 bg-white mt-3">
+                                                        <h6 class="fw-bold text-dark-green border-bottom pb-2 mb-3">
+                                                            <i class="fa-solid fa-comment-dots me-2"></i> Send Notification Message to <?= htmlspecialchars($st['full_name']) ?>
+                                                        </h6>
+                                                        <form action="<?= $baseUrl ?>/index.php?route=supervisor/send-notification" method="POST">
+                                                            <input type="hidden" name="csrf_token" value="<?= Helper::csrfToken() ?>">
+                                                            <input type="hidden" name="student_id" value="<?= $st['id'] ?>">
+                                                            <input type="hidden" name="redirect_to" value="supervisor/students">
+
+                                                            <div class="row g-2">
+                                                                <div class="col-md-7">
+                                                                    <label class="form-label fw-semibold fs-8 mb-1">Message Subject / Title *</label>
+                                                                    <input type="text" name="title" class="form-control form-control-sm" placeholder="e.g. Action Required: Verification Document" required>
+                                                                </div>
+                                                                <div class="col-md-5">
+                                                                    <label class="form-label fw-semibold fs-8 mb-1">Notice Urgency</label>
+                                                                    <select name="type" class="form-select form-select-sm">
+                                                                        <option value="info">Information / General</option>
+                                                                        <option value="warning">Important / Warning</option>
+                                                                        <option value="success">Success / Confirmation</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="col-12">
+                                                                    <label class="form-label fw-semibold fs-8 mb-1">Message Content *</label>
+                                                                    <textarea name="message" class="form-control form-control-sm" rows="3" placeholder="Enter instructions, feedback on documents, or placement guidance..." required></textarea>
+                                                                </div>
+                                                                <div class="col-12 text-end">
+                                                                    <button type="submit" class="btn btn-green btn-sm fw-bold">
+                                                                        <i class="fa-solid fa-paper-plane me-1"></i> Send Notification Message
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+
                                                 </div>
                                                 <div class="modal-footer bg-light">
                                                     <a href="mailto:<?= htmlspecialchars($st['email']) ?>" class="btn btn-outline-success btn-sm">
@@ -392,6 +431,53 @@ $flash = Helper::getFlash();
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-green btn-sm fw-bold">
                         <i class="fa-solid fa-bolt me-1"></i> Run Auto-Placement
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Broadcast Notification to All Assigned Students -->
+<div class="modal fade" id="modalBroadcastMessage" tabindex="-1" aria-labelledby="modalBroadcastLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark-green text-white">
+                <h5 class="modal-title fw-bold" id="modalBroadcastLabel">
+                    <i class="fa-solid fa-bullhorn me-2"></i> Broadcast Notice to All Assigned Students
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="<?= $baseUrl ?>/index.php?route=supervisor/send-notification" method="POST">
+                <input type="hidden" name="csrf_token" value="<?= Helper::csrfToken() ?>">
+                <input type="hidden" name="student_id" value="0">
+                <input type="hidden" name="redirect_to" value="supervisor/students">
+
+                <div class="modal-body p-4">
+                    <p class="text-secondary fs-8 mb-3">
+                        This message will be dispatched directly to the notification inbox of all <strong><?= count($students) ?></strong> students in your supervision cohort.
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-8 mb-1">Broadcast Title *</label>
+                        <input type="text" name="title" class="form-control form-control-sm" placeholder="e.g. SIWES Guidelines & Deadlines" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-8 mb-1">Priority / Type</label>
+                        <select name="type" class="form-select form-select-sm">
+                            <option value="info">General Information</option>
+                            <option value="warning">Important Warning / Deadline</option>
+                            <option value="success">Congratulations / General Update</option>
+                        </select>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label fw-semibold fs-8 mb-1">Broadcast Content *</label>
+                        <textarea name="message" class="form-control form-control-sm" rows="4" placeholder="Enter instructions or announcements to be broadcast to all assigned students..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-green btn-sm fw-bold">
+                        <i class="fa-solid fa-paper-plane me-1"></i> Send Broadcast
                     </button>
                 </div>
             </form>

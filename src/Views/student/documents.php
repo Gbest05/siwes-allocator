@@ -85,9 +85,19 @@ $flash = Helper::getFlash();
                                                     <span class="badge badge-<?= strtolower($doc['status']) ?>"><?= htmlspecialchars($doc['status']) ?></span>
                                                 </td>
                                                 <td data-label="Action">
-                                                    <a href="<?= $baseUrl ?>/<?= htmlspecialchars($doc['file_path']) ?>" target="_blank" class="btn btn-sm btn-outline-green" title="Download">
-                                                        <i class="fa-solid fa-download"></i>
-                                                    </a>
+                                                    <div class="d-flex align-items-center gap-1">
+                                                        <a href="<?= $baseUrl ?>/<?= htmlspecialchars($doc['file_path']) ?>" target="_blank" class="btn btn-sm btn-outline-green" title="Download">
+                                                            <i class="fa-solid fa-download"></i>
+                                                        </a>
+                                                        <form action="<?= $baseUrl ?>/index.php?route=student/documents/delete" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this document?');">
+                                                            <input type="hidden" name="csrf_token" value="<?= Helper::csrfToken() ?>">
+                                                            <input type="hidden" name="document_id" value="<?= $doc['id'] ?>">
+                                                            <input type="hidden" name="redirect_to" value="student/documents">
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Document">
+                                                                <i class="fa-solid fa-trash-can"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>

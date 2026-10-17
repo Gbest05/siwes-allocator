@@ -87,7 +87,10 @@ $siteSettings = Helper::getAllSettings();
                         <i class="fa-solid fa-user-gear"></i> User Management
                     </a>
                     <a class="nav-link <?= $currentRoute === 'admin/departments' ? 'active' : '' ?>" href="<?= $baseUrl ?>/index.php?route=admin/departments">
-                        <i class="fa-solid fa-sitemap"></i> Departments
+                        <i class="fa-solid fa-sitemap"></i> Departments & Levels
+                    </a>
+                    <a class="nav-link <?= str_contains($currentRoute, 'companies') ? 'active' : '' ?>" href="<?= $baseUrl ?>/index.php?route=coordinator/companies">
+                        <i class="fa-solid fa-building"></i> Partner Companies
                     </a>
                     <a class="nav-link <?= $currentRoute === 'admin/settings' ? 'active' : '' ?>" href="<?= $baseUrl ?>/index.php?route=admin/settings">
                         <i class="fa-solid fa-sliders"></i> Landing Page CMS

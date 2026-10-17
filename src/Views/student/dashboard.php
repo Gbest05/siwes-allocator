@@ -31,10 +31,17 @@ $flash = Helper::getFlash();
                             Matric No: <strong><?= htmlspecialchars($student['matric_number']) ?></strong> &bull; Department: <strong><?= htmlspecialchars($student['department_name'] ?? 'N/A') ?></strong>
                         </p>
                     </div>
-                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0 d-flex flex-wrap gap-2 justify-content-md-end">
                         <?php if ($allocation): ?>
+                            <a href="<?= $baseUrl ?>/index.php?route=student/application" class="btn btn-outline-light fw-bold">
+                                <i class="fa-solid fa-file-signature me-1"></i> View Application
+                            </a>
                             <a href="<?= $baseUrl ?>/index.php?route=allocation-letter" class="btn btn-light text-dark-green fw-bold">
-                                <i class="fa-solid fa-file-arrow-down me-1"></i> Allocation Letter
+                                <i class="fa-solid fa-file-arrow-down me-1"></i> Placement Letter
+                            </a>
+                        <?php elseif (!empty($application['status']) && $application['status'] !== 'Draft'): ?>
+                            <a href="<?= $baseUrl ?>/index.php?route=student/application" class="btn btn-light text-dark-green fw-bold">
+                                <i class="fa-solid fa-file-circle-check me-1"></i> View Submitted Application
                             </a>
                         <?php else: ?>
                             <a href="<?= $baseUrl ?>/index.php?route=student/application" class="btn btn-green fw-bold">
