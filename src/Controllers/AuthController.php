@@ -71,7 +71,9 @@ class AuthController {
             Helper::redirect('dashboard');
         }
         $db = Database::getInstance();
-        $departments = $db->query("SELECT * FROM departments ORDER BY name ASC")->fetchAll();
+        $departments = $db->query("SELECT * FROM departments WHERE is_active = 1 ORDER BY name ASC")->fetchAll();
+        $programmes = $db->query("SELECT * FROM academic_programmes WHERE is_active = 1 ORDER BY id ASC")->fetchAll();
+        $levels = $db->query("SELECT * FROM academic_levels WHERE is_active = 1 ORDER BY id ASC")->fetchAll();
         require __DIR__ . '/../Views/auth/register.php';
     }
 
@@ -102,6 +104,30 @@ class AuthController {
         }
 
         $db = Database::getInstance();
+
+        // Validate department is active
+        $deptCheck = $db->prepare("SELECT id FROM departments WHERE id = :id AND is_active = 1");
+        $deptCheck->execute(['id' => $deptId]);
+        if (!$deptCheck->fetch()) {
+            Helper::setFlash('warning', 'Please select a valid, active academic department.');
+            Helper::redirect('register');
+        }
+
+        // Validate programme is active
+        $progCheck = $db->prepare("SELECT id FROM academic_programmes WHERE code = :code AND is_active = 1");
+        $progCheck->execute(['code' => $programme]);
+        if (!$progCheck->fetch()) {
+            Helper::setFlash('warning', 'Please select a valid, active academic programme.');
+            Helper::redirect('register');
+        }
+
+        // Validate level is active
+        $lvlCheck = $db->prepare("SELECT id FROM academic_levels WHERE code = :code AND is_active = 1");
+        $lvlCheck->execute(['code' => $level]);
+        if (!$lvlCheck->fetch()) {
+            Helper::setFlash('warning', 'Please select a valid, active academic level.');
+            Helper::redirect('register');
+        }
 
         // Check if email or matric number already exists
         $checkStmt = $db->prepare("SELECT id FROM users WHERE email = :email");

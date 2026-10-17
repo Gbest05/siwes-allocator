@@ -85,18 +85,20 @@ $siteSettings = Helper::getAllSettings();
                             <div class="col-12 col-sm-6">
                                 <label for="programme" class="form-label fw-semibold fs-8 mb-1">Programme *</label>
                                 <select class="form-select form-select-sm" id="programme" name="programme" required>
-                                    <option value="ND">National Diploma (ND)</option>
-                                    <option value="HND">Higher National Diploma (HND)</option>
+                                    <option value="">-- Select Programme --</option>
+                                    <?php foreach ($programmes as $prog): ?>
+                                        <option value="<?= htmlspecialchars($prog['code']) ?>"><?= htmlspecialchars($prog['name']) ?></option>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
 
                             <div class="col-12 col-sm-6">
                                 <label for="level" class="form-label fw-semibold fs-8 mb-1">Level *</label>
                                 <select class="form-select form-select-sm" id="level" name="level" required>
-                                    <option value="ND1">ND 1</option>
-                                    <option value="ND2" selected>ND 2</option>
-                                    <option value="HND1">HND 1</option>
-                                    <option value="HND2">HND 2</option>
+                                    <option value="">-- Select Level --</option>
+                                    <?php foreach ($levels as $lvl): ?>
+                                        <option value="<?= htmlspecialchars($lvl['code']) ?>"><?= htmlspecialchars($lvl['name']) ?></option>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
 

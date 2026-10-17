@@ -67,10 +67,25 @@ $router->post('coordinator/create-supervisor', [App\Controllers\CoordinatorContr
 // 5. Supervisor Routes
 $router->get('supervisor/dashboard', [App\Controllers\SupervisorController::class, 'dashboard']);
 $router->get('supervisor/students', [App\Controllers\SupervisorController::class, 'students']);
+$router->post('supervisor/review-application', [App\Controllers\SupervisorController::class, 'reviewApplication']);
+$router->post('supervisor/allocate-placement', [App\Controllers\SupervisorController::class, 'allocatePlacement']);
+$router->post('supervisor/auto-assign-placements', [App\Controllers\SupervisorController::class, 'autoAssignPlacements']);
 
-// 5. Admin & Management Routes
+// 6. Admin & Management Routes
 $router->get('admin/users', [App\Controllers\AdminController::class, 'users']);
 $router->get('admin/departments', [App\Controllers\AdminController::class, 'departments']);
+$router->post('admin/departments/create', [App\Controllers\AdminController::class, 'createDepartment']);
+$router->post('admin/departments/update', [App\Controllers\AdminController::class, 'updateDepartment']);
+$router->post('admin/departments/delete', [App\Controllers\AdminController::class, 'deleteDepartment']);
+$router->post('admin/departments/toggle', [App\Controllers\AdminController::class, 'toggleDepartment']);
+$router->post('admin/programmes/create', [App\Controllers\AdminController::class, 'createProgramme']);
+$router->post('admin/programmes/update', [App\Controllers\AdminController::class, 'updateProgramme']);
+$router->post('admin/programmes/delete', [App\Controllers\AdminController::class, 'deleteProgramme']);
+$router->post('admin/programmes/toggle', [App\Controllers\AdminController::class, 'toggleProgramme']);
+$router->post('admin/levels/create', [App\Controllers\AdminController::class, 'createLevel']);
+$router->post('admin/levels/update', [App\Controllers\AdminController::class, 'updateLevel']);
+$router->post('admin/levels/delete', [App\Controllers\AdminController::class, 'deleteLevel']);
+$router->post('admin/levels/toggle', [App\Controllers\AdminController::class, 'toggleLevel']);
 $router->get('admin/settings', [App\Controllers\AdminController::class, 'settings']);
 $router->post('admin/settings', [App\Controllers\AdminController::class, 'updateSettings']);
 

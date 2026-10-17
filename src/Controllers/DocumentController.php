@@ -42,9 +42,11 @@ class DocumentController {
 
         $docType = Helper::sanitize($_POST['doc_type'] ?? 'SIWES Application Letter');
 
+        $redirectTo = !empty($_POST['redirect_to']) ? Helper::sanitize($_POST['redirect_to']) : 'student/documents';
+
         if (!isset($_FILES['document_file']) || $_FILES['document_file']['error'] !== UPLOAD_ERR_OK) {
             Helper::setFlash('warning', 'Please select a valid document file to upload.');
-            Helper::redirect('student/documents');
+            Helper::redirect($redirectTo);
         }
 
         $file = $_FILES['document_file'];
@@ -53,12 +55,12 @@ class DocumentController {
         $allowedTypes = ['pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx'];
         if (!in_array($extension, $allowedTypes, true)) {
             Helper::setFlash('danger', 'Invalid file type. Allowed types: PDF, PNG, JPG, DOC, DOCX.');
-            Helper::redirect('student/documents');
+            Helper::redirect($redirectTo);
         }
 
         if ($file['size'] > 5 * 1024 * 1024) {
             Helper::setFlash('danger', 'File size exceeds maximum 5MB limit.');
-            Helper::redirect('student/documents');
+            Helper::redirect($redirectTo);
         }
 
         $newFileName = 'doc_' . $student['id'] . '_' . time() . '.' . $extension;
@@ -88,6 +90,6 @@ class DocumentController {
             Helper::setFlash('danger', 'Failed to store uploaded file on server.');
         }
 
-        Helper::redirect('student/documents');
+        Helper::redirect($redirectTo);
     }
 }

@@ -91,8 +91,34 @@ class StudentController {
         $userId = Auth::id();
         $db = Database::getInstance();
 
-        $student = $db->query("SELECT id FROM students WHERE user_id = {$userId}")->fetch();
+        $studentStmt = $db->prepare("
+            SELECT s.*, u.full_name, u.email, d.name AS department_name, d.code AS department_code
+            FROM students s
+            JOIN users u ON s.user_id = u.id
+            LEFT JOIN departments d ON s.department_id = d.id
+            WHERE s.user_id = :uid
+        ");
+        $studentStmt->execute(['uid' => $userId]);
+        $student = $studentStmt->fetch();
+
         $application = $db->query("SELECT * FROM siwes_applications WHERE student_id = {$student['id']}")->fetch();
+        $documents = $db->query("SELECT * FROM documents WHERE student_id = {$student['id']} ORDER BY uploaded_at DESC")->fetchAll();
+
+        // Supervisor details if attached
+        $supervisor = null;
+        if (!empty($student['supervisor_id'])) {
+            $supStmt = $db->prepare("
+                SELECT u.full_name AS supervisor_name, u.email AS supervisor_email,
+                       sup.phone AS supervisor_phone, sup.designation, sup.staff_id,
+                       d.name AS supervisor_department
+                FROM users u
+                LEFT JOIN supervisors sup ON u.id = sup.user_id
+                LEFT JOIN departments d ON sup.department_id = d.id
+                WHERE u.id = :sup_id
+            ");
+            $supStmt->execute(['sup_id' => $student['supervisor_id']]);
+            $supervisor = $supStmt->fetch() ?: null;
+        }
 
         require __DIR__ . '/../Views/student/application.php';
     }
@@ -106,18 +132,71 @@ class StudentController {
 
         $userId = Auth::id();
         $db = Database::getInstance();
-        $student = $db->query("SELECT id FROM students WHERE user_id = {$userId}")->fetch();
 
+        $studentStmt = $db->prepare("
+            SELECT s.*, u.full_name, u.email, d.name AS department_name
+            FROM students s
+            JOIN users u ON s.user_id = u.id
+            LEFT JOIN departments d ON s.department_id = d.id
+            WHERE s.user_id = :uid
+        ");
+        $studentStmt->execute(['uid' => $userId]);
+        $student = $studentStmt->fetch();
+
+        $action = Helper::sanitize($_POST['action'] ?? 'final_submit');
         $industryPref = Helper::sanitize($_POST['preferred_industry'] ?? '');
         $locationPref = Helper::sanitize($_POST['preferred_location'] ?? '');
         $notes = Helper::sanitize($_POST['notes'] ?? '');
 
+        // Fetch existing application if any
+        $app = $db->query("SELECT * FROM siwes_applications WHERE student_id = {$student['id']}")->fetch();
+        $existingStatus = $app['status'] ?? 'Draft';
+
         if (empty($industryPref) || empty($locationPref)) {
-            Helper::setFlash('warning', 'Please select both preferred industry and location.');
-            Helper::redirect('student/application');
+            // Check if existing application has preferences
+            if (!empty($app['preferred_industry']) && !empty($app['preferred_location'])) {
+                $industryPref = $app['preferred_industry'];
+                $locationPref = $app['preferred_location'];
+                $notes = !empty($notes) ? $notes : ($app['notes'] ?? '');
+            } else {
+                Helper::setFlash('warning', 'Please select both preferred industry and location.');
+                Helper::redirect('student/application?step=1');
+            }
         }
 
-        // Upsert Application
+        if ($action === 'save_preferences') {
+            // Save preferences as draft and advance to document uploads
+            $targetStatus = ($existingStatus === 'Submitted' || $existingStatus === 'Approved' || $existingStatus === 'Allocated') ? $existingStatus : 'Draft';
+            $stmt = $db->prepare("
+                INSERT INTO siwes_applications (student_id, preferred_industry, preferred_location, notes, status, updated_at) 
+                VALUES (:sid, :ind, :loc, :notes, :st, CURRENT_TIMESTAMP)
+                ON CONFLICT (student_id) DO UPDATE SET 
+                    preferred_industry = EXCLUDED.preferred_industry,
+                    preferred_location = EXCLUDED.preferred_location,
+                    notes = EXCLUDED.notes,
+                    updated_at = CURRENT_TIMESTAMP
+            ");
+            $stmt->execute([
+                'sid'   => $student['id'],
+                'ind'   => $industryPref,
+                'loc'   => $locationPref,
+                'notes' => $notes,
+                'st'    => $targetStatus
+            ]);
+
+            Helper::setFlash('success', 'Preferences saved! Please upload your required documents in Step 2.');
+            Helper::redirect('student/application?step=2');
+        }
+
+        // Final Submission Flow
+        // 1. Verify that the student has uploaded at least one document
+        $docCount = (int)$db->query("SELECT COUNT(*) FROM documents WHERE student_id = {$student['id']}")->fetchColumn();
+        if ($docCount === 0) {
+            Helper::setFlash('warning', 'Please upload at least one required document (e.g. SIWES Application Letter or Student ID Card) before submitting your application.');
+            Helper::redirect('student/application?step=2');
+        }
+
+        // 2. Update Application Status to 'Submitted'
         $stmt = $db->prepare("
             INSERT INTO siwes_applications (student_id, preferred_industry, preferred_location, notes, status, updated_at) 
             VALUES (:sid, :ind, :loc, :notes, 'Submitted', CURRENT_TIMESTAMP)
@@ -128,20 +207,53 @@ class StudentController {
                 status = 'Submitted',
                 updated_at = CURRENT_TIMESTAMP
         ");
-        
-        try {
-            $stmt->execute([
-                'sid' => $student['id'],
-                'ind' => $industryPref,
-                'loc' => $locationPref,
-                'notes' => $notes
+        $stmt->execute([
+            'sid'   => $student['id'],
+            'ind'   => $industryPref,
+            'loc'   => $locationPref,
+            'notes' => $notes
+        ]);
+
+        // 3. Notify Attached Supervisor if present
+        $supervisorName = 'your institutional supervisor';
+        if (!empty($student['supervisor_id'])) {
+            $supUser = $db->query("SELECT full_name FROM users WHERE id = {$student['supervisor_id']}")->fetch();
+            if ($supUser) {
+                $supervisorName = $supUser['full_name'];
+            }
+
+            $db->prepare("
+                INSERT INTO notifications (user_id, title, message, type)
+                VALUES (:uid, 'Student Application & Documents Submitted', :msg, 'info')
+            ")->execute([
+                'uid' => $student['supervisor_id'],
+                'msg' => "Student {$student['full_name']} ({$student['matric_number']}) from {$student['department_name']} has submitted their SIWES application and uploaded documents for review and placement allocation."
             ]);
-            Helper::setFlash('success', 'SIWES Application submitted successfully!');
-            Helper::redirect('dashboard');
-        } catch (\Exception $e) {
-            Helper::setFlash('danger', 'Error submitting application: ' . $e->getMessage());
-            Helper::redirect('student/application');
         }
+
+        // 4. Notify All Coordinators & Administrators
+        $coords = $db->query("SELECT id FROM users WHERE role = 'coordinator' OR role = 'admin'")->fetchAll();
+        foreach ($coords as $c) {
+            $db->prepare("
+                INSERT INTO notifications (user_id, title, message, type)
+                VALUES (:uid, 'New SIWES Application & Documents', :msg, 'info')
+            ")->execute([
+                'uid' => $c['id'],
+                'msg' => "New SIWES application and documents submitted by {$student['full_name']} ({$student['matric_number']}) - Department: {$student['department_name']}."
+            ]);
+        }
+
+        // 5. Confirmation Notification to Student
+        $db->prepare("
+            INSERT INTO notifications (user_id, title, message, type)
+            VALUES (:uid, 'Application Submitted Successfully', :msg, 'success')
+        ")->execute([
+            'uid' => $userId,
+            'msg' => "Your SIWES application and uploaded documents have been forwarded to {$supervisorName} and the coordinator for review and placement allocation."
+        ]);
+
+        Helper::setFlash('success', "Your SIWES application and documents have been submitted successfully to {$supervisorName} and the coordinator!");
+        Helper::redirect('dashboard');
     }
 
     public function viewAllocation(): void {

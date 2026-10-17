@@ -316,8 +316,85 @@ class Database {
                     }
                 }
             }
+
+            // 5. Ensure Registration Controls Schema (Departments is_active, Academic Programmes & Levels)
+            if ($driver === 'sqlite') {
+                $deptCols = $db->query("PRAGMA table_info(departments)")->fetchAll(PDO::FETCH_COLUMN, 1);
+                if (!in_array('is_active', $deptCols)) {
+                    $db->exec("ALTER TABLE departments ADD COLUMN is_active INTEGER DEFAULT 1");
+                }
+
+                $db->exec("
+                    CREATE TABLE IF NOT EXISTS academic_programmes (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        code TEXT UNIQUE NOT NULL,
+                        name TEXT NOT NULL,
+                        is_active INTEGER DEFAULT 1,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    );
+                    CREATE TABLE IF NOT EXISTS academic_levels (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        code TEXT UNIQUE NOT NULL,
+                        name TEXT NOT NULL,
+                        is_active INTEGER DEFAULT 1,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    );
+                ");
+            } else {
+                $db->exec("
+                    ALTER TABLE departments ADD COLUMN IF NOT EXISTS is_active INT DEFAULT 1;
+                    CREATE TABLE IF NOT EXISTS academic_programmes (
+                        id SERIAL PRIMARY KEY,
+                        code VARCHAR(50) UNIQUE NOT NULL,
+                        name VARCHAR(150) NOT NULL,
+                        is_active INT DEFAULT 1,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                    );
+                    CREATE TABLE IF NOT EXISTS academic_levels (
+                        id SERIAL PRIMARY KEY,
+                        code VARCHAR(50) UNIQUE NOT NULL,
+                        name VARCHAR(150) NOT NULL,
+                        is_active INT DEFAULT 1,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                    );
+                ");
+            }
+
+            // Seed default programmes if empty
+            $progCount = (int)$db->query("SELECT COUNT(*) FROM academic_programmes")->fetchColumn();
+            if ($progCount === 0) {
+                $defaultProgrammes = [
+                    ['code' => 'ND', 'name' => 'National Diploma (ND)'],
+                    ['code' => 'HND', 'name' => 'Higher National Diploma (HND)'],
+                    ['code' => 'BSc', 'name' => 'Bachelor of Science (B.Sc)'],
+                    ['code' => 'BEng', 'name' => 'Bachelor of Engineering (B.Eng)'],
+                ];
+                $pStmt = $db->prepare("INSERT INTO academic_programmes (code, name, is_active) VALUES (:c, :n, 1)");
+                foreach ($defaultProgrammes as $p) {
+                    $pStmt->execute(['c' => $p['code'], 'n' => $p['name']]);
+                }
+            }
+
+            // Seed default levels if empty
+            $levelCount = (int)$db->query("SELECT COUNT(*) FROM academic_levels")->fetchColumn();
+            if ($levelCount === 0) {
+                $defaultLevels = [
+                    ['code' => 'ND1', 'name' => 'ND 1'],
+                    ['code' => 'ND2', 'name' => 'ND 2'],
+                    ['code' => 'HND1', 'name' => 'HND 1'],
+                    ['code' => 'HND2', 'name' => 'HND 2'],
+                    ['code' => '200L', 'name' => '200 Level'],
+                    ['code' => '300L', 'name' => '300 Level'],
+                    ['code' => '400L', 'name' => '400 Level'],
+                ];
+                $lStmt = $db->prepare("INSERT INTO academic_levels (code, name, is_active) VALUES (:c, :n, 1)");
+                foreach ($defaultLevels as $l) {
+                    $lStmt->execute(['c' => $l['code'], 'n' => $l['name']]);
+                }
+            }
+
         } catch (\Exception $e) {
-            error_log("Supervisor schema migration notice: " . $e->getMessage());
+            error_log("Supervisor/Registration schema migration notice: " . $e->getMessage());
         }
     }
 }

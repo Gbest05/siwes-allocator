@@ -97,15 +97,17 @@ class AllocationController {
             // Insert Allocation
             $allocStmt = $db->prepare("
                 INSERT INTO allocations (application_id, student_id, company_id, compatibility_score, match_reasons, status, allocated_by, start_date, end_date)
-                VALUES (:aid, :sid, :cid, :score, :reasons, 'Allocated', :by, CURRENT_DATE, CURRENT_DATE + INTERVAL '6 months')
+                VALUES (:aid, :sid, :cid, :score, :reasons, 'Allocated', :by, :sdate, :edate)
             ");
             $allocStmt->execute([
-                'aid' => $appId,
-                'sid' => $studentId,
-                'cid' => $companyId,
-                'score' => $matchResult['total_score'],
+                'aid'     => $appId,
+                'sid'     => $studentId,
+                'cid'     => $companyId,
+                'score'   => $matchResult['total_score'],
                 'reasons' => json_encode($matchResult),
-                'by' => Auth::id()
+                'by'      => Auth::id(),
+                'sdate'   => date('Y-m-d'),
+                'edate'   => date('Y-m-d', strtotime('+6 months'))
             ]);
 
             // Update Application Status

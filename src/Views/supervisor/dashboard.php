@@ -24,7 +24,7 @@ $flash = Helper::getFlash();
             <!-- 1. Supervisor Profile Banner -->
             <div class="card-custom p-4 bg-dark-green text-white mb-4 position-relative overflow-hidden">
                 <div class="row align-items-center">
-                    <div class="col-md-8">
+                    <div class="col-md-7">
                         <span class="badge bg-emerald mb-2 fw-bold text-uppercase">
                             <i class="fa-solid fa-id-badge me-1"></i> <?= htmlspecialchars($supervisor['designation'] ?? 'Institutional SIWES Supervisor') ?>
                         </span>
@@ -35,7 +35,12 @@ $flash = Helper::getFlash();
                             Email: <strong><?= htmlspecialchars($supervisor['email']) ?></strong>
                         </p>
                     </div>
-                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <div class="col-md-5 text-md-end mt-3 mt-md-0 d-flex flex-wrap gap-2 justify-content-md-end">
+                        <?php if ($stats['pending_placement'] > 0): ?>
+                            <button type="button" class="btn btn-warning fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#modalAutoAssignAll">
+                                <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Auto-Assign Placements (<?= $stats['pending_placement'] ?>)
+                            </button>
+                        <?php endif; ?>
                         <a href="<?= $baseUrl ?>/index.php?route=supervisor/students" class="btn btn-light text-dark-green fw-bold">
                             <i class="fa-solid fa-users me-1"></i> Full Student Roster
                         </a>
@@ -89,7 +94,7 @@ $flash = Helper::getFlash();
                         <div>
                             <span class="text-secondary fs-7 fw-semibold d-block mb-1">Departments</span>
                             <h3 class="fw-bold mb-0 text-dark-charcoal"><?= $stats['distinct_depts'] ?></h3>
-                            <small class="text-muted fs-8">Represented in your roster</small>
+                            <small class="text-muted fs-8">In your supervision cohort</small>
                         </div>
                         <div class="stat-icon bg-light-green text-dark-green">
                             <i class="fa-solid fa-sitemap"></i>
@@ -106,12 +111,19 @@ $flash = Helper::getFlash();
                             <i class="fa-solid fa-user-graduate me-2"></i> Students Assigned to You
                         </h4>
                         <p class="text-secondary fs-7 mb-0">
-                            Monitor logbooks, industrial attachment locations, and student training progress.
+                            Review submitted applications, inspect uploaded documents, and approve or allocate company placements.
                         </p>
                     </div>
-                    <span class="badge bg-light-green text-dark-green fw-bold px-3 py-2 align-self-start align-self-md-auto fs-7">
-                        <?= count($assignedStudents) ?> Total Assigned
-                    </span>
+                    <div class="d-flex align-items-center gap-2">
+                        <?php if ($stats['pending_placement'] > 0): ?>
+                            <button type="button" class="btn btn-sm btn-outline-success fw-semibold" data-bs-toggle="modal" data-bs-target="#modalAutoAssignAll">
+                                <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Auto-Match Unplaced
+                            </button>
+                        <?php endif; ?>
+                        <span class="badge bg-light-green text-dark-green fw-bold px-3 py-2 fs-7">
+                            <?= count($assignedStudents) ?> Total Assigned
+                        </span>
+                    </div>
                 </div>
 
                 <?php if (empty($assignedStudents)): ?>
@@ -132,37 +144,57 @@ $flash = Helper::getFlash();
                                     <th>#</th>
                                     <th>Student Details</th>
                                     <th>Department & Level</th>
-                                    <th>Contact Info</th>
-                                    <th>Assigned Company / Placement</th>
-                                    <th>Assigned Date</th>
+                                    <th>Application & Docs</th>
+                                    <th>Placement Status</th>
                                     <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php foreach ($assignedStudents as $idx => $st): ?>
+                                    <?php 
+                                        $docsCount = isset($studentDocs[$st['id']]) ? count($studentDocs[$st['id']]) : 0;
+                                        $appStatus = $st['application_status'] ?? 'Not Submitted';
+                                    ?>
                                     <tr>
                                         <td data-label="#" class="text-muted fs-8 fw-semibold"><?= $idx + 1 ?></td>
                                         <td data-label="Student Details">
                                             <div class="fw-bold text-dark fs-7"><?= htmlspecialchars($st['full_name']) ?></div>
                                             <span class="badge bg-light text-dark border fs-8"><?= htmlspecialchars($st['matric_number']) ?></span>
+                                            <div class="text-muted fs-8 mt-1">
+                                                <i class="fa-solid fa-envelope me-1 text-primary-green"></i> <?= htmlspecialchars($st['email']) ?>
+                                            </div>
                                         </td>
                                         <td data-label="Department & Level">
                                             <div class="fw-semibold text-dark fs-7"><?= htmlspecialchars($st['dept_name'] ?? 'General') ?></div>
                                             <small class="text-muted fs-8"><?= htmlspecialchars($st['programme']) ?> &bull; <?= htmlspecialchars($st['level']) ?></small>
                                         </td>
-                                        <td data-label="Contact Info">
+                                        <td data-label="Application & Docs">
                                             <div>
-                                                <a href="mailto:<?= htmlspecialchars($st['email']) ?>" class="text-dark-charcoal text-decoration-none fs-8 d-block text-truncate" style="max-width: 170px;">
-                                                    <i class="fa-solid fa-envelope text-primary-green me-1"></i> <?= htmlspecialchars($st['email']) ?>
-                                                </a>
-                                                <?php if (!empty($st['phone'])): ?>
-                                                    <a href="tel:<?= htmlspecialchars($st['phone']) ?>" class="text-secondary text-decoration-none fs-8">
-                                                        <i class="fa-solid fa-phone text-primary-green me-1"></i> <?= htmlspecialchars($st['phone']) ?>
-                                                    </a>
+                                                <?php if ($appStatus === 'Approved'): ?>
+                                                    <span class="badge bg-success fs-8"><i class="fa-solid fa-circle-check me-1"></i> Approved</span>
+                                                <?php elseif ($appStatus === 'Submitted'): ?>
+                                                    <span class="badge bg-info text-dark fs-8"><i class="fa-solid fa-paper-plane me-1"></i> Submitted</span>
+                                                <?php elseif ($appStatus === 'Allocated'): ?>
+                                                    <span class="badge bg-emerald fs-8"><i class="fa-solid fa-building-circle-check me-1"></i> Allocated</span>
+                                                <?php elseif ($appStatus === 'Rejected'): ?>
+                                                    <span class="badge bg-danger fs-8"><i class="fa-solid fa-circle-xmark me-1"></i> Rejected</span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-secondary fs-8"><i class="fa-solid fa-clock me-1"></i> <?= htmlspecialchars($appStatus) ?></span>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="mt-1">
+                                                <?php if ($docsCount > 0): ?>
+                                                    <span class="badge bg-light text-dark border fs-8">
+                                                        <i class="fa-solid fa-file-lines text-primary-green me-1"></i> <?= $docsCount ?> Document<?= $docsCount > 1 ? 's' : '' ?>
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-light text-muted border fs-8">
+                                                        <i class="fa-solid fa-file-circle-exclamation text-warning me-1"></i> No Docs
+                                                    </span>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
-                                        <td data-label="Assigned Company">
+                                        <td data-label="Placement Status">
                                             <?php if (!empty($st['company_name'])): ?>
                                                 <div class="fw-bold text-dark fs-7">
                                                     <i class="fa-solid fa-building text-primary-green me-1"></i> <?= htmlspecialchars($st['company_name']) ?>
@@ -170,89 +202,225 @@ $flash = Helper::getFlash();
                                                 <small class="text-muted fs-8 d-block">
                                                     <?= htmlspecialchars($st['company_city'] ?? '') ?>, <?= htmlspecialchars($st['company_state'] ?? '') ?>
                                                 </small>
-                                                <span class="badge bg-emerald fs-8 mt-1">Confirmed Placement</span>
+                                                <?php if (!empty($st['compatibility_score'])): ?>
+                                                    <span class="badge bg-light-green text-dark-green fs-8 mt-1">
+                                                        <?= (int)$st['compatibility_score'] ?>% Match
+                                                    </span>
+                                                <?php endif; ?>
                                             <?php else: ?>
                                                 <span class="badge bg-warning text-dark fs-8">
                                                     <i class="fa-solid fa-clock me-1"></i> Awaiting Placement
                                                 </span>
                                             <?php endif; ?>
                                         </td>
-                                        <td data-label="Assigned Date">
-                                            <div class="fs-8 text-secondary">
-                                                <?= !empty($st['supervisor_assigned_at']) ? date('M d, Y', strtotime($st['supervisor_assigned_at'])) : 'Active' ?>
-                                            </div>
-                                        </td>
                                         <td data-label="Actions" class="text-end">
                                             <button type="button" class="btn btn-outline-success btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#modalStudent<?= $st['id'] ?>">
-                                                <i class="fa-solid fa-eye me-1"></i> View Details
+                                                <i class="fa-solid fa-sliders me-1"></i> Review & Assign
                                             </button>
                                         </td>
                                     </tr>
 
-                                    <!-- Student Profile & Placement Modal -->
+                                    <!-- Student Profile, Documents & Placement Action Modal -->
                                     <div class="modal fade" id="modalStudent<?= $st['id'] ?>" tabindex="-1" aria-labelledby="modalLabel<?= $st['id'] ?>" aria-hidden="true">
                                         <div class="modal-dialog modal-dialog-centered modal-lg">
                                             <div class="modal-content border-0 shadow-lg">
                                                 <div class="modal-header bg-dark-green text-white">
-                                                    <h5 class="modal-title fw-bold" id="modalLabel<?= $st['id'] ?>">
-                                                        <i class="fa-solid fa-user-graduate me-2"></i> <?= htmlspecialchars($st['full_name']) ?> — Student Profile
-                                                    </h5>
+                                                    <div>
+                                                        <h5 class="modal-title fw-bold" id="modalLabel<?= $st['id'] ?>">
+                                                            <i class="fa-solid fa-user-graduate me-2"></i> <?= htmlspecialchars($st['full_name']) ?>
+                                                        </h5>
+                                                        <small class="text-white-50"><?= htmlspecialchars($st['matric_number']) ?> &bull; <?= htmlspecialchars($st['dept_name'] ?? 'General') ?> (<?= htmlspecialchars($st['programme']) ?> &bull; <?= htmlspecialchars($st['level']) ?>)</small>
+                                                    </div>
                                                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
                                                 <div class="modal-body p-4">
-                                                    <div class="row g-3 mb-4">
+
+                                                    <!-- Student Info & Contacts -->
+                                                    <div class="row g-3 mb-4 p-3 bg-light rounded-3 border">
                                                         <div class="col-sm-6">
-                                                            <small class="text-secondary d-block">Matriculation Number</small>
-                                                            <span class="fw-bold text-dark fs-6"><?= htmlspecialchars($st['matric_number']) ?></span>
+                                                            <small class="text-muted d-block fs-8">Email Address</small>
+                                                            <a href="mailto:<?= htmlspecialchars($st['email']) ?>" class="fw-semibold text-dark fs-7 text-decoration-none">
+                                                                <i class="fa-solid fa-envelope text-primary-green me-1"></i> <?= htmlspecialchars($st['email']) ?>
+                                                            </a>
                                                         </div>
                                                         <div class="col-sm-6">
-                                                            <small class="text-secondary d-block">Academic Department</small>
-                                                            <span class="fw-bold text-dark fs-6"><?= htmlspecialchars($st['dept_name'] ?? 'N/A') ?></span>
+                                                            <small class="text-muted d-block fs-8">Phone Number</small>
+                                                            <span class="fw-semibold text-dark fs-7">
+                                                                <i class="fa-solid fa-phone text-primary-green me-1"></i> <?= htmlspecialchars($st['phone'] ?? 'N/A') ?>
+                                                            </span>
                                                         </div>
                                                         <div class="col-sm-6">
-                                                            <small class="text-secondary d-block">Programme & Level</small>
-                                                            <span class="fw-semibold text-dark fs-7"><?= htmlspecialchars($st['programme']) ?> &bull; <?= htmlspecialchars($st['level']) ?></span>
+                                                            <small class="text-muted d-block fs-8">Preferred Industry Sector</small>
+                                                            <span class="fw-bold text-dark fs-7">
+                                                                <i class="fa-solid fa-industry text-primary-green me-1"></i> <?= htmlspecialchars($st['preferred_industry'] ?? 'Not Specified') ?>
+                                                            </span>
                                                         </div>
                                                         <div class="col-sm-6">
-                                                            <small class="text-secondary d-block">Student Phone & Email</small>
-                                                            <span class="fw-semibold text-dark fs-7"><?= htmlspecialchars($st['phone'] ?? 'N/A') ?> &bull; <?= htmlspecialchars($st['email']) ?></span>
+                                                            <small class="text-muted d-block fs-8">Preferred Placement Location</small>
+                                                            <span class="fw-bold text-dark fs-7">
+                                                                <i class="fa-solid fa-location-dot text-primary-green me-1"></i> <?= htmlspecialchars($st['preferred_location'] ?? 'Not Specified') ?>
+                                                            </span>
                                                         </div>
                                                     </div>
 
-                                                    <h6 class="fw-bold text-dark-green border-bottom pb-2 mb-3">
-                                                        <i class="fa-solid fa-building me-2"></i> Company Placement Information
-                                                    </h6>
-                                                    <?php if (!empty($st['company_name'])): ?>
+                                                    <!-- Section: Uploaded Documents Review -->
+                                                    <div class="mb-4">
+                                                        <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
+                                                            <h6 class="fw-bold text-dark-green mb-0">
+                                                                <i class="fa-solid fa-folder-closed me-2"></i> Uploaded Documents
+                                                            </h6>
+                                                            <span class="badge bg-light text-dark border"><?= $docsCount ?> Attached</span>
+                                                        </div>
+
+                                                        <?php if (empty($studentDocs[$st['id']])): ?>
+                                                            <div class="alert alert-light border py-3 text-center fs-8 text-secondary">
+                                                                <i class="fa-solid fa-info-circle text-warning me-1"></i>
+                                                                The student has not uploaded any required documents (acceptance letters, CV, IT clearance) yet.
+                                                            </div>
+                                                        <?php else: ?>
+                                                            <div class="list-group">
+                                                                <?php foreach ($studentDocs[$st['id']] as $doc): ?>
+                                                                    <div class="list-group-item list-group-item-action d-flex align-items-center justify-content-between p-3">
+                                                                        <div class="d-flex align-items-center gap-3">
+                                                                            <div class="bg-light-green text-dark-green rounded p-2">
+                                                                                <i class="fa-solid fa-file-pdf fs-5"></i>
+                                                                            </div>
+                                                                            <div>
+                                                                                <div class="fw-bold text-dark fs-7"><?= htmlspecialchars($doc['doc_type'] ?? 'Uploaded Document') ?></div>
+                                                                                <small class="text-muted fs-8">
+                                                                                    <?= htmlspecialchars($doc['file_name']) ?> &bull; 
+                                                                                    <?= round(($doc['file_size'] ?? 0) / 1024, 1) ?> KB &bull;
+                                                                                    Uploaded <?= date('M d, Y', strtotime($doc['uploaded_at'])) ?>
+                                                                                </small>
+                                                                            </div>
+                                                                        </div>
+                                                                        <a href="<?= $baseUrl ?>/<?= htmlspecialchars($doc['file_path']) ?>" target="_blank" class="btn btn-sm btn-outline-success fw-semibold">
+                                                                            <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> View / Download
+                                                                        </a>
+                                                                    </div>
+                                                                <?php endforeach; ?>
+                                                            </div>
+                                                        <?php endif; ?>
+                                                    </div>
+
+                                                    <!-- Section: Review Application Status -->
+                                                    <div class="mb-4 p-3 border rounded-3 bg-white">
+                                                        <h6 class="fw-bold text-dark-green border-bottom pb-2 mb-3">
+                                                            <i class="fa-solid fa-clipboard-check me-2"></i> Review Application
+                                                        </h6>
+                                                        <form action="<?= $baseUrl ?>/index.php?route=supervisor/review-application" method="POST">
+                                                            <input type="hidden" name="csrf_token" value="<?= Helper::csrfToken() ?>">
+                                                            <input type="hidden" name="student_id" value="<?= $st['id'] ?>">
+                                                            <input type="hidden" name="application_id" value="<?= $st['app_id'] ?? 0 ?>">
+                                                            <input type="hidden" name="redirect_to" value="supervisor/dashboard">
+
+                                                            <div class="row g-2 align-items-end">
+                                                                <div class="col-md-4">
+                                                                    <label class="form-label fw-semibold fs-8 mb-1">Application Decision</label>
+                                                                    <select name="action" class="form-select form-select-sm" required>
+                                                                        <option value="Approved" <?= ($appStatus === 'Approved' || $appStatus === 'Allocated') ? 'selected' : '' ?>>Approve Application</option>
+                                                                        <option value="Rejected" <?= ($appStatus === 'Rejected') ? 'selected' : '' ?>>Reject / Request Re-submission</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="col-md-5">
+                                                                    <label class="form-label fw-semibold fs-8 mb-1">Supervisor Review Note</label>
+                                                                    <input type="text" name="notes" class="form-control form-control-sm" placeholder="e.g. Documents verified and approved" value="<?= htmlspecialchars($st['app_notes'] ?? '') ?>">
+                                                                </div>
+                                                                <div class="col-md-3">
+                                                                    <button type="submit" class="btn btn-green btn-sm w-100 fw-bold">
+                                                                        <i class="fa-solid fa-check-double me-1"></i> Submit Review
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+
+                                                    <!-- Section: Company Placement Allocation -->
+                                                    <div class="p-3 border rounded-3 bg-white">
+                                                        <h6 class="fw-bold text-dark-green border-bottom pb-2 mb-3">
+                                                            <i class="fa-solid fa-building me-2"></i> Company Placement Allocation
+                                                        </h6>
+
+                                                        <?php if (!empty($st['company_name'])): ?>
+                                                            <div class="alert alert-success d-flex align-items-center justify-content-between p-3 mb-3">
+                                                                <div>
+                                                                    <div class="fw-bold fs-7">
+                                                                        <i class="fa-solid fa-circle-check me-1"></i> Currently Placed at <?= htmlspecialchars($st['company_name']) ?>
+                                                                    </div>
+                                                                    <small class="d-block text-muted">
+                                                                        Location: <?= htmlspecialchars($st['company_city'] ?? '') ?>, <?= htmlspecialchars($st['company_state'] ?? '') ?> &bull; 
+                                                                        Industry: <?= htmlspecialchars($st['company_industry'] ?? 'N/A') ?> &bull;
+                                                                        Contact: <?= htmlspecialchars($st['contact_person'] ?? 'N/A') ?> (<?= htmlspecialchars($st['company_phone'] ?? 'N/A') ?>)
+                                                                    </small>
+                                                                    <span class="badge bg-light-green text-dark-green mt-1">
+                                                                        Compatibility Score: <?= (int)$st['compatibility_score'] ?>%
+                                                                    </span>
+                                                                </div>
+                                                                <span class="badge bg-emerald px-2 py-1">Active</span>
+                                                            </div>
+                                                        <?php else: ?>
+                                                            <div class="alert alert-warning py-2 px-3 fs-8 mb-3">
+                                                                <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                                                                This student does not have an active company placement. You can assign placement manually or trigger automatic matching below.
+                                                            </div>
+                                                        <?php endif; ?>
+
+                                                        <!-- Placement Actions Tabs / Options -->
                                                         <div class="row g-3">
-                                                            <div class="col-sm-6">
-                                                                <small class="text-secondary d-block">Company Name</small>
-                                                                <span class="fw-bold text-dark fs-6"><?= htmlspecialchars($st['company_name']) ?></span>
+                                                            <!-- Option A: Automatic Matching -->
+                                                            <div class="col-md-6 border-end">
+                                                                <div class="p-2">
+                                                                    <span class="fw-bold text-dark fs-7 d-block mb-1">
+                                                                        <i class="fa-solid fa-wand-magic-sparkles text-primary-green me-1"></i> Option 1: Automatic Matching
+                                                                    </span>
+                                                                    <p class="text-secondary fs-8 mb-3">
+                                                                        Smart-matches student's department, preferred industry, and location to the best available partner organization.
+                                                                    </p>
+                                                                    <form action="<?= $baseUrl ?>/index.php?route=supervisor/auto-assign-placements" method="POST">
+                                                                        <input type="hidden" name="csrf_token" value="<?= Helper::csrfToken() ?>">
+                                                                        <input type="hidden" name="student_id" value="<?= $st['id'] ?>">
+                                                                        <input type="hidden" name="redirect_to" value="supervisor/dashboard">
+                                                                        <button type="submit" class="btn btn-outline-success btn-sm w-100 fw-bold">
+                                                                            <i class="fa-solid fa-bolt me-1"></i> Auto-Match Student Now
+                                                                        </button>
+                                                                    </form>
+                                                                </div>
                                                             </div>
-                                                            <div class="col-sm-6">
-                                                                <small class="text-secondary d-block">Industry Sector</small>
-                                                                <span class="fw-semibold text-dark fs-7"><?= htmlspecialchars($st['company_industry'] ?? 'N/A') ?></span>
-                                                            </div>
-                                                            <div class="col-sm-12">
-                                                                <small class="text-secondary d-block">Location / Address</small>
-                                                                <span class="fw-semibold text-dark fs-7"><?= htmlspecialchars($st['company_city'] ?? '') ?>, <?= htmlspecialchars($st['company_state'] ?? '') ?></span>
-                                                            </div>
-                                                            <div class="col-sm-6">
-                                                                <small class="text-secondary d-block">Industry Contact Person</small>
-                                                                <span class="fw-semibold text-dark fs-7"><?= htmlspecialchars($st['contact_person'] ?? 'N/A') ?> (<?= htmlspecialchars($st['company_phone'] ?? 'N/A') ?>)</span>
-                                                            </div>
-                                                            <div class="col-sm-6">
-                                                                <small class="text-secondary d-block">Attachment Duration</small>
-                                                                <span class="fw-semibold text-dark fs-7">
-                                                                    <?= !empty($st['start_date']) ? date('M Y', strtotime($st['start_date'])) . ' — ' . date('M Y', strtotime($st['end_date'])) : 'Standard 6-Month Period' ?>
-                                                                </span>
+
+                                                            <!-- Option B: Manual Company Selection -->
+                                                            <div class="col-md-6">
+                                                                <div class="p-2">
+                                                                    <span class="fw-bold text-dark fs-7 d-block mb-1">
+                                                                        <i class="fa-solid fa-hand-pointer text-primary-green me-1"></i> Option 2: Manual Selection
+                                                                    </span>
+                                                                    <p class="text-secondary fs-8 mb-2">
+                                                                        Manually choose from active partner companies with open capacity.
+                                                                    </p>
+                                                                    <form action="<?= $baseUrl ?>/index.php?route=supervisor/allocate-placement" method="POST">
+                                                                        <input type="hidden" name="csrf_token" value="<?= Helper::csrfToken() ?>">
+                                                                        <input type="hidden" name="student_id" value="<?= $st['id'] ?>">
+                                                                        <input type="hidden" name="redirect_to" value="supervisor/dashboard">
+
+                                                                        <div class="mb-2">
+                                                                            <select name="company_id" class="form-select form-select-sm" required>
+                                                                                <option value="">-- Choose Partner Company --</option>
+                                                                                <?php foreach ($companies as $comp): ?>
+                                                                                    <option value="<?= $comp['id'] ?>" <?= (!empty($st['current_company_id']) && (int)$st['current_company_id'] === (int)$comp['id']) ? 'selected' : '' ?>>
+                                                                                        <?= htmlspecialchars($comp['name']) ?> (<?= htmlspecialchars($comp['state']) ?> &bull; <?= $comp['available_slots'] ?> slots)
+                                                                                    </option>
+                                                                                <?php endforeach; ?>
+                                                                            </select>
+                                                                        </div>
+                                                                        <button type="submit" class="btn btn-green btn-sm w-100 fw-bold">
+                                                                            <i class="fa-solid fa-check me-1"></i> <?= !empty($st['company_name']) ? 'Reassign Placement' : 'Assign Selected Company' ?>
+                                                                        </button>
+                                                                    </form>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    <?php else: ?>
-                                                        <div class="alert alert-light border">
-                                                            <i class="fa-solid fa-info-circle text-warning me-2"></i>
-                                                            This student has not yet been matched to an industrial placement company. The coordinator will finalize placement matching.
-                                                        </div>
-                                                    <?php endif; ?>
+
+                                                    </div>
+
                                                 </div>
                                                 <div class="modal-footer bg-light">
                                                     <a href="mailto:<?= htmlspecialchars($st['email']) ?>" class="btn btn-outline-success btn-sm">
@@ -274,6 +442,44 @@ $flash = Helper::getFlash();
                     </div>
                 <?php endif; ?>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Auto-Assign All Unplaced Students -->
+<div class="modal fade" id="modalAutoAssignAll" tabindex="-1" aria-labelledby="modalAutoAssignLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark-green text-white">
+                <h5 class="modal-title fw-bold" id="modalAutoAssignLabel">
+                    <i class="fa-solid fa-wand-magic-sparkles me-2"></i> Auto-Assign Placements
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="<?= $baseUrl ?>/index.php?route=supervisor/auto-assign-placements" method="POST">
+                <input type="hidden" name="csrf_token" value="<?= Helper::csrfToken() ?>">
+                <input type="hidden" name="student_id" value="0">
+                <input type="hidden" name="redirect_to" value="supervisor/dashboard">
+
+                <div class="modal-body p-4">
+                    <p class="text-dark fs-7 mb-3">
+                        You have <strong><?= $stats['pending_placement'] ?></strong> assigned student(s) currently awaiting placement.
+                    </p>
+                    <div class="alert alert-info py-2 px-3 fs-8 mb-3">
+                        <i class="fa-solid fa-circle-info me-1"></i>
+                        The smart placement engine evaluates each student's academic department, preferred industry, and geographical location against available partner company slots, allocating the highest compatibility matches automatically.
+                    </div>
+                    <p class="text-secondary fs-8 mb-0">
+                        Both the student and the SIWES coordinator will be notified immediately upon allocation.
+                    </p>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-green btn-sm fw-bold">
+                        <i class="fa-solid fa-bolt me-1"></i> Run Auto-Placement
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
