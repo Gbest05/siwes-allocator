@@ -24,6 +24,7 @@ require_once __DIR__ . '/../src/Controllers/CompanyController.php';
 require_once __DIR__ . '/../src/Controllers/DocumentController.php';
 require_once __DIR__ . '/../src/Controllers/NotificationController.php';
 require_once __DIR__ . '/../src/Controllers/ReportController.php';
+require_once __DIR__ . '/../src/Controllers/SupervisorController.php';
 
 $router = new Router();
 
@@ -57,6 +58,15 @@ $router->post('coordinator/allocate', [App\Controllers\AllocationController::cla
 $router->post('coordinator/reassign', [App\Controllers\AllocationController::class, 'reassign']);
 $router->get('coordinator/companies', [App\Controllers\CompanyController::class, 'index']);
 $router->post('coordinator/companies', [App\Controllers\CompanyController::class, 'store']);
+$router->get('coordinator/supervisors', [App\Controllers\CoordinatorController::class, 'supervisors']);
+$router->post('coordinator/assign-supervisor', [App\Controllers\CoordinatorController::class, 'assignSupervisor']);
+$router->post('coordinator/auto-distribute-supervisors', [App\Controllers\CoordinatorController::class, 'autoDistributeSupervisors']);
+$router->post('coordinator/unassign-supervisor', [App\Controllers\CoordinatorController::class, 'unassignSupervisor']);
+$router->post('coordinator/create-supervisor', [App\Controllers\CoordinatorController::class, 'createSupervisor']);
+
+// 5. Supervisor Routes
+$router->get('supervisor/dashboard', [App\Controllers\SupervisorController::class, 'dashboard']);
+$router->get('supervisor/students', [App\Controllers\SupervisorController::class, 'students']);
 
 // 5. Admin & Management Routes
 $router->get('admin/users', [App\Controllers\AdminController::class, 'users']);

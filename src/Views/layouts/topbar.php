@@ -32,7 +32,15 @@ $unreadNotifs = (int)$db->query("SELECT COUNT(*) FROM notifications WHERE user_i
                 <i class="fa-solid fa-chevron-down fs-8 text-secondary ms-1"></i>
             </button>
             <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                <li><a class="dropdown-item" href="<?= $baseUrl ?>/index.php?route=dashboard"><i class="fa-solid fa-gauge me-2 text-primary-green"></i> Dashboard</a></li>
+                <?php
+                    $roleDashboard = match(Auth::role()) {
+                        'admin' => 'admin/dashboard',
+                        'coordinator' => 'coordinator/dashboard',
+                        'supervisor' => 'supervisor/dashboard',
+                        default => 'dashboard'
+                    };
+                ?>
+                <li><a class="dropdown-item" href="<?= $baseUrl ?>/index.php?route=<?= $roleDashboard ?>"><i class="fa-solid fa-gauge me-2 text-primary-green"></i> Dashboard</a></li>
                 <li><a class="dropdown-item" href="<?= $baseUrl ?>/index.php?route=notifications"><i class="fa-solid fa-bell me-2 text-primary-green"></i> Notifications</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item text-danger" href="<?= $baseUrl ?>/index.php?route=logout"><i class="fa-solid fa-right-from-bracket me-2"></i> Logout</a></li>

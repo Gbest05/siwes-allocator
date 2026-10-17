@@ -45,6 +45,9 @@ CREATE TABLE IF NOT EXISTS students (
     level VARCHAR(20) NOT NULL CHECK (level IN ('ND1', 'ND2', 'HND1', 'HND2')),
     phone VARCHAR(50) NOT NULL,
     address TEXT,
+    supervisor_id INT REFERENCES users(id) ON DELETE SET NULL,
+    supervisor_assigned_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+    supervisor_assigned_by INT REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

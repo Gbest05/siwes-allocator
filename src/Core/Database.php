@@ -36,6 +36,8 @@ class Database {
                     die("Database Connection Error: " . $ex->getMessage());
                 }
             }
+
+            self::ensureSupervisorSchema(self::$instance);
         }
         return self::$instance;
     }
@@ -222,6 +224,100 @@ class Database {
             }
         } catch (PDOException $e) {
             // Silently continue if tables already exist or permission boundary prevents to_regclass
+        }
+    }
+
+    /**
+     * Automatic Supervisor Schema Migration & Demo Seeder
+     */
+    private static function ensureSupervisorSchema(PDO $db): void {
+        try {
+            // 1. Create supervisors table if not exists
+            $db->exec("
+                CREATE TABLE IF NOT EXISTS supervisors (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+                    department_id INTEGER REFERENCES departments(id) ON DELETE SET NULL,
+                    staff_id TEXT UNIQUE,
+                    phone TEXT,
+                    designation TEXT DEFAULT 'Institution Supervisor',
+                    max_capacity INTEGER DEFAULT 20,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                );
+            ");
+
+            // 2. Add supervisor columns to students table if missing
+            $driver = $db->getAttribute(PDO::ATTR_DRIVER_NAME);
+            if ($driver === 'sqlite') {
+                $cols = $db->query("PRAGMA table_info(students)")->fetchAll(PDO::FETCH_COLUMN, 1);
+                if (!in_array('supervisor_id', $cols)) {
+                    $db->exec("ALTER TABLE students ADD COLUMN supervisor_id INTEGER REFERENCES users(id) ON DELETE SET NULL");
+                    $db->exec("ALTER TABLE students ADD COLUMN supervisor_assigned_at DATETIME DEFAULT NULL");
+                    $db->exec("ALTER TABLE students ADD COLUMN supervisor_assigned_by INTEGER REFERENCES users(id) ON DELETE SET NULL");
+                }
+            } else {
+                // PostgreSQL
+                $db->exec("
+                    ALTER TABLE students ADD COLUMN IF NOT EXISTS supervisor_id INT REFERENCES users(id) ON DELETE SET NULL;
+                    ALTER TABLE students ADD COLUMN IF NOT EXISTS supervisor_assigned_at TIMESTAMP WITH TIME ZONE DEFAULT NULL;
+                    ALTER TABLE students ADD COLUMN IF NOT EXISTS supervisor_assigned_by INT REFERENCES users(id) ON DELETE SET NULL;
+                ");
+            }
+
+            // 3. Seed demo supervisors if none exist
+            $supCount = (int)$db->query("SELECT COUNT(*) FROM users WHERE role = 'supervisor'")->fetchColumn();
+            $hash = password_hash('password123', PASSWORD_BCRYPT);
+
+            if ($supCount === 0) {
+                // Supervisor 1: Engr. Tunde Bakare
+                $db->exec("INSERT INTO users (full_name, email, password_hash, role) VALUES 
+                    ('Engr. Tunde Bakare', 'supervisor1@siwesp.edu.ng', '{$hash}', 'supervisor')");
+                $sup1UserId = (int)$db->lastInsertId();
+                $db->exec("INSERT INTO supervisors (user_id, department_id, staff_id, phone, designation) VALUES 
+                    ({$sup1UserId}, 1, 'SUP/COM/001', '08031234567', 'Senior Lecturer & SIWES Supervisor')");
+
+                // Supervisor 2: Dr. Mrs. Nkechi Egwu
+                $db->exec("INSERT INTO users (full_name, email, password_hash, role) VALUES 
+                    ('Dr. Mrs. Nkechi Egwu', 'supervisor2@siwesp.edu.ng', '{$hash}', 'supervisor')");
+                $sup2UserId = (int)$db->lastInsertId();
+                $db->exec("INSERT INTO supervisors (user_id, department_id, staff_id, phone, designation) VALUES 
+                    ({$sup2UserId}, 2, 'SUP/EEE/002', '08029876543', 'Principal Supervisor')");
+
+                // Supervisor 3: Dr. Farouk Umar
+                $db->exec("INSERT INTO users (full_name, email, password_hash, role) VALUES 
+                    ('Dr. Farouk Umar', 'supervisor3@siwesp.edu.ng', '{$hash}', 'supervisor')");
+                $sup3UserId = (int)$db->lastInsertId();
+                $db->exec("INSERT INTO supervisors (user_id, department_id, staff_id, phone, designation) VALUES 
+                    ({$sup3UserId}, 3, 'SUP/IFT/003', '08055512345', 'SIWES Academic Supervisor')");
+            }
+
+            // 4. Ensure there are at least 10 sample students for robust equal-distribution testing
+            $studentCount = (int)$db->query("SELECT COUNT(*) FROM students")->fetchColumn();
+            if ($studentCount < 10) {
+                $additionalStudents = [
+                    ['name' => 'Oluwaseun Adebayo', 'email' => 'seun@siwesp.edu.ng', 'matric' => 'F/ND/22/3210005', 'dept' => 2, 'prog' => 'ND', 'level' => 'ND2', 'phone' => '08098761234', 'industry' => 'Power & Electrical Grid', 'location' => 'Oyo'],
+                    ['name' => 'Blessing Danjuma', 'email' => 'blessing@siwesp.edu.ng', 'matric' => 'F/HND/22/3210006', 'dept' => 3, 'prog' => 'HND', 'level' => 'HND1', 'phone' => '08145556677', 'industry' => 'Telecommunications & Cloud', 'location' => 'Abuja'],
+                    ['name' => 'Emmanuel Bassey', 'email' => 'emmanuel@siwesp.edu.ng', 'matric' => 'F/ND/22/3210007', 'dept' => 1, 'prog' => 'ND', 'level' => 'ND2', 'phone' => '08021112233', 'industry' => 'Software Development & IT', 'location' => 'Lagos'],
+                    ['name' => 'Zainab Bello', 'email' => 'zainab@siwesp.edu.ng', 'matric' => 'F/HND/22/3210008', 'dept' => 4, 'prog' => 'HND', 'level' => 'HND2', 'phone' => '08034445566', 'industry' => 'Data Analytics & AI', 'location' => 'Lagos'],
+                    ['name' => 'Kelechi Okonkwo', 'email' => 'kelechi@siwesp.edu.ng', 'matric' => 'F/ND/22/3210009', 'dept' => 5, 'prog' => 'ND', 'level' => 'ND1', 'phone' => '08057778899', 'industry' => 'Hardware & Embedded Systems', 'location' => 'Rivers'],
+                    ['name' => 'Amina Mohammed', 'email' => 'amina.m@siwesp.edu.ng', 'matric' => 'F/HND/22/3210010', 'dept' => 1, 'prog' => 'HND', 'level' => 'HND2', 'phone' => '08089990011', 'industry' => 'Fintech & Cyber Security', 'location' => 'Lagos'],
+                    ['name' => 'David Adeleke', 'email' => 'david@siwesp.edu.ng', 'matric' => 'F/ND/22/3210011', 'dept' => 2, 'prog' => 'ND', 'level' => 'ND2', 'phone' => '08091114455', 'industry' => 'Renewable Energy & Power', 'location' => 'Lagos'],
+                    ['name' => 'Maryam Sani', 'email' => 'maryam@siwesp.edu.ng', 'matric' => 'F/HND/22/3210012', 'dept' => 3, 'prog' => 'HND', 'level' => 'HND1', 'phone' => '08132225566', 'industry' => 'Cloud Systems & Networking', 'location' => 'Abuja'],
+                ];
+
+                foreach ($additionalStudents as $st) {
+                    $exists = $db->query("SELECT id FROM users WHERE email = '{$st['email']}'")->fetch();
+                    if (!$exists) {
+                        $db->exec("INSERT INTO users (full_name, email, password_hash, role) VALUES ('{$st['name']}', '{$st['email']}', '{$hash}', 'student')");
+                        $uId = (int)$db->lastInsertId();
+                        $db->exec("INSERT INTO students (user_id, matric_number, department_id, programme, level, phone, address) VALUES ({$uId}, '{$st['matric']}', {$st['dept']}, '{$st['prog']}', '{$st['level']}', '{$st['phone']}', 'Campus Hall of Residence')");
+                        $sId = (int)$db->lastInsertId();
+                        $db->exec("INSERT INTO siwes_applications (student_id, preferred_industry, preferred_location, status, notes) VALUES ({$sId}, '{$st['industry']}', '{$st['location']}', 'Approved', 'Ready for supervisor and placement allocation.')");
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            error_log("Supervisor schema migration notice: " . $e->getMessage());
         }
     }
 }

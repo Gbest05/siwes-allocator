@@ -106,11 +106,17 @@ $flash = Helper::getFlash();
                 <div class="col-sm-6 col-xl-3">
                     <div class="stat-card">
                         <div>
-                            <span class="text-secondary fs-7 fw-semibold d-block mb-1">SIWES Duration</span>
-                            <h5 class="fw-bold mb-0 text-dark">6 Months</h5>
+                            <span class="text-secondary fs-7 fw-semibold d-block mb-1">Assigned Supervisor</span>
+                            <h6 class="fw-bold mb-0 text-truncate text-dark" style="max-width: 140px;" title="<?= htmlspecialchars($supervisor['supervisor_name'] ?? 'Pending Assignment') ?>">
+                                <?php if ($supervisor): ?>
+                                    <span class="text-emerald"><i class="fa-solid fa-user-check me-1"></i><?= htmlspecialchars($supervisor['supervisor_name']) ?></span>
+                                <?php else: ?>
+                                    <span class="text-secondary">Pending</span>
+                                <?php endif; ?>
+                            </h6>
                         </div>
                         <div class="stat-icon bg-light-green text-dark-green">
-                            <i class="fa-solid fa-calendar-check"></i>
+                            <i class="fa-solid fa-chalkboard-user"></i>
                         </div>
                     </div>
                 </div>
@@ -171,6 +177,68 @@ $flash = Helper::getFlash();
                                 <h6 class="fw-bold">No Allocation Assigned Yet</h6>
                                 <p class="text-secondary fs-7 max-w-500 mx-auto">
                                     Your application has been received. Once the SIWES coordinator completes the smart compatibility matching process, your assigned company details will appear here.
+                                </p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Institutional Supervisor Details Card -->
+                    <div class="card-custom p-4 mb-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-3">
+                            <h5 class="fw-bold mb-0 text-dark-green"><i class="fa-solid fa-chalkboard-user me-2"></i> Institutional SIWES Supervisor</h5>
+                            <?php if ($supervisor): ?>
+                                <span class="badge bg-emerald px-3 py-2 fw-bold"><i class="fa-solid fa-circle-check me-1"></i> Assigned</span>
+                            <?php else: ?>
+                                <span class="badge bg-warning text-dark px-3 py-2 fw-bold"><i class="fa-solid fa-clock me-1"></i> Awaiting Assignment</span>
+                            <?php endif; ?>
+                        </div>
+
+                        <?php if ($supervisor): ?>
+                            <div class="row g-3">
+                                <div class="col-sm-6">
+                                    <small class="text-secondary d-block">Supervisor Name</small>
+                                    <span class="fw-bold text-dark fs-6"><?= htmlspecialchars($supervisor['supervisor_name']) ?></span>
+                                </div>
+                                <div class="col-sm-6">
+                                    <small class="text-secondary d-block">Designation / Role</small>
+                                    <span class="fw-semibold text-dark fs-7"><?= htmlspecialchars($supervisor['designation'] ?? 'Institution SIWES Supervisor') ?></span>
+                                </div>
+                                <div class="col-sm-6">
+                                    <small class="text-secondary d-block">Department</small>
+                                    <span class="fw-semibold text-dark fs-7"><?= htmlspecialchars($supervisor['supervisor_department'] ?? ($student['department_name'] ?? 'Academic Department')) ?></span>
+                                </div>
+                                <div class="col-sm-6">
+                                    <small class="text-secondary d-block">Staff ID</small>
+                                    <span class="fw-semibold text-dark fs-7"><?= htmlspecialchars($supervisor['staff_id'] ?? 'Staff Roster') ?></span>
+                                </div>
+                                <div class="col-sm-6">
+                                    <small class="text-secondary d-block">Email Address</small>
+                                    <a href="mailto:<?= htmlspecialchars($supervisor['supervisor_email']) ?>" class="fw-semibold text-primary-green fs-7 text-decoration-none">
+                                        <i class="fa-solid fa-envelope me-1"></i> <?= htmlspecialchars($supervisor['supervisor_email']) ?>
+                                    </a>
+                                </div>
+                                <div class="col-sm-6">
+                                    <small class="text-secondary d-block">Phone Number</small>
+                                    <?php if (!empty($supervisor['supervisor_phone'])): ?>
+                                        <a href="tel:<?= htmlspecialchars($supervisor['supervisor_phone']) ?>" class="fw-semibold text-primary-green fs-7 text-decoration-none">
+                                            <i class="fa-solid fa-phone me-1"></i> <?= htmlspecialchars($supervisor['supervisor_phone']) ?>
+                                        </a>
+                                    <?php else: ?>
+                                        <span class="text-muted fs-7">Available via SIWES Unit</span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <?php if (!empty($supervisor['supervisor_assigned_at'])): ?>
+                                <div class="mt-3 pt-2 border-top text-secondary fs-8">
+                                    <i class="fa-solid fa-calendar-check me-1"></i> Assigned by Coordinator on: <?= date('M d, Y', strtotime($supervisor['supervisor_assigned_at'])) ?>
+                                </div>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <div class="text-center py-4">
+                                <div class="text-secondary mb-2"><i class="fa-solid fa-user-clock fs-1 text-warning"></i></div>
+                                <h6 class="fw-bold mb-1">Supervisor Pending Assignment</h6>
+                                <p class="text-secondary fs-7 max-w-500 mx-auto mb-0">
+                                    Your institutional supervisor has not been assigned yet. The department coordinator will assign an academic supervisor to oversee your training, sign your logbook, and conduct assessment visits.
                                 </p>
                             </div>
                         <?php endif; ?>

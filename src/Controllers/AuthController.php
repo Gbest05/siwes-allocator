@@ -53,6 +53,9 @@ class AuthController {
                 case 'coordinator':
                     Helper::redirect('coordinator/dashboard');
                     break;
+                case 'supervisor':
+                    Helper::redirect('supervisor/dashboard');
+                    break;
                 default:
                     Helper::redirect('dashboard');
                     break;

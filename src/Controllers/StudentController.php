@@ -16,6 +16,8 @@ class StudentController {
             Helper::redirect('admin/dashboard');
         } elseif (Auth::role() === 'coordinator') {
             Helper::redirect('coordinator/dashboard');
+        } elseif (Auth::role() === 'supervisor') {
+            Helper::redirect('supervisor/dashboard');
         }
 
         $userId = Auth::id();
@@ -52,6 +54,24 @@ class StudentController {
         ");
         $allocStmt->execute(['sid' => $student['id']]);
         $allocation = $allocStmt->fetch();
+
+        // Fetch Assigned Supervisor Details
+        $supervisor = null;
+        if (!empty($student['supervisor_id'])) {
+            $supStmt = $db->prepare("
+                SELECT u.full_name AS supervisor_name, u.email AS supervisor_email,
+                       sup.phone AS supervisor_phone, sup.designation, sup.staff_id,
+                       d.name AS supervisor_department,
+                       s.supervisor_assigned_at
+                FROM students s
+                JOIN users u ON s.supervisor_id = u.id
+                LEFT JOIN supervisors sup ON u.id = sup.user_id
+                LEFT JOIN departments d ON sup.department_id = d.id
+                WHERE s.id = :sid
+            ");
+            $supStmt->execute(['sid' => $student['id']]);
+            $supervisor = $supStmt->fetch() ?: null;
+        }
 
         // Fetch Recent Notifications
         $notifStmt = $db->prepare("SELECT * FROM notifications WHERE user_id = :uid ORDER BY created_at DESC LIMIT 5");

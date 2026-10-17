@@ -46,6 +46,16 @@ $siteSettings = Helper::getAllSettings();
                 <a class="nav-link <?= $currentRoute === 'notifications' ? 'active' : '' ?>" href="<?= $baseUrl ?>/index.php?route=notifications">
                     <i class="fa-solid fa-bell"></i> Notifications
                 </a>
+            <?php elseif ($role === 'supervisor'): ?>
+                <a class="nav-link <?= $currentRoute === 'supervisor/dashboard' ? 'active' : '' ?>" href="<?= $baseUrl ?>/index.php?route=supervisor/dashboard">
+                    <i class="fa-solid fa-gauge"></i> Dashboard
+                </a>
+                <a class="nav-link <?= $currentRoute === 'supervisor/students' ? 'active' : '' ?>" href="<?= $baseUrl ?>/index.php?route=supervisor/students">
+                    <i class="fa-solid fa-user-graduate"></i> My Assigned Students
+                </a>
+                <a class="nav-link <?= $currentRoute === 'notifications' ? 'active' : '' ?>" href="<?= $baseUrl ?>/index.php?route=notifications">
+                    <i class="fa-solid fa-bell"></i> Notifications
+                </a>
             <?php elseif ($role === 'coordinator' || $role === 'admin'): ?>
                 <a class="nav-link <?= str_contains($currentRoute, 'dashboard') ? 'active' : '' ?>" href="<?= $baseUrl ?>/index.php?route=coordinator/dashboard">
                     <i class="fa-solid fa-gauge"></i> Dashboard
@@ -58,6 +68,9 @@ $siteSettings = Helper::getAllSettings();
                 </a>
                 <a class="nav-link <?= $currentRoute === 'coordinator/allocation' ? 'active' : '' ?>" href="<?= $baseUrl ?>/index.php?route=coordinator/allocation">
                     <i class="fa-solid fa-diagram-project"></i> Smart Allocation
+                </a>
+                <a class="nav-link <?= $currentRoute === 'coordinator/supervisors' ? 'active' : '' ?>" href="<?= $baseUrl ?>/index.php?route=coordinator/supervisors">
+                    <i class="fa-solid fa-chalkboard-user"></i> Assign Supervisors
                 </a>
                 <a class="nav-link <?= $currentRoute === 'coordinator/companies' ? 'active' : '' ?>" href="<?= $baseUrl ?>/index.php?route=coordinator/companies">
                     <i class="fa-solid fa-building"></i> Companies
