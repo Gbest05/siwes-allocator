@@ -188,6 +188,21 @@ class Helper {
             'contact_address'      => 'SIWES Directorate, Admin Block',
             'contact_email'        => 'siwes@institution.edu.ng',
             'contact_phone'        => '+234 803 123 4567',
+
+            // Official SIWES Application & Placement Letter Template Settings
+            'letter_institution_name'   => 'School of Technology & Applied Sciences',
+            'letter_directorate_title'  => 'Directorate of Student Industrial Work Experience Scheme (SIWES)',
+            'letter_contact_info'       => 'P.M.B. 2011, Main Campus • Email: siwes@institution.edu.ng • Phone: +234 803 123 4567',
+            'letter_ref_prefix'         => 'STAS/SIWES/',
+            'letter_title'              => 'LETTER OF ATTACHMENT FOR STUDENT INDUSTRIAL WORK EXPERIENCE SCHEME (SIWES)',
+            'letter_salutation'         => 'The Human Resources Manager / Industrial Supervisor,',
+            'letter_body_intro'         => 'We write to formally introduce {STUDENT_NAME} (Matriculation Number: {MATRIC_NUMBER}), a registered {PROGRAMME} ({LEVEL}) student in the Department of {DEPARTMENT_NAME}.',
+            'letter_body_training'      => 'In partial fulfillment of the academic requirements for the award of the Diploma, the above-named student has been officially allocated to your reputable organization for a mandatory {DURATION} industrial attachment training commencing on {START_DATE} and concluding on {END_DATE}.',
+            'letter_body_conclusion'    => 'We kindly request that you grant the student placement within your institution to enable them gain practical work experience relevant to their field of study. Please complete and return the attached Form SP-1 upon arrival.',
+            'letter_closing'            => 'Yours faithfully,',
+            'letter_signatory_name'     => 'Dr. Mrs. Amina Yusuf',
+            'letter_signatory_title'    => 'Head of SIWES Directorate',
+            'letter_seal_text'          => 'OFFICIAL SEAL • SIWES UNIT',
         ];
 
         try {

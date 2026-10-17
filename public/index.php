@@ -73,6 +73,10 @@ $router->post('coordinator/assign-supervisor', [App\Controllers\CoordinatorContr
 $router->post('coordinator/auto-distribute-supervisors', [App\Controllers\CoordinatorController::class, 'autoDistributeSupervisors']);
 $router->post('coordinator/unassign-supervisor', [App\Controllers\CoordinatorController::class, 'unassignSupervisor']);
 $router->post('coordinator/create-supervisor', [App\Controllers\CoordinatorController::class, 'createSupervisor']);
+$router->get('coordinator/letter-template', [App\Controllers\CoordinatorController::class, 'letterTemplate']);
+$router->post('coordinator/letter-template', [App\Controllers\CoordinatorController::class, 'updateLetterTemplate']);
+$router->get('admin/letter-template', [App\Controllers\CoordinatorController::class, 'letterTemplate']);
+$router->post('admin/letter-template', [App\Controllers\CoordinatorController::class, 'updateLetterTemplate']);
 
 // 5. Supervisor Routes
 $router->get('supervisor/dashboard', [App\Controllers\SupervisorController::class, 'dashboard']);

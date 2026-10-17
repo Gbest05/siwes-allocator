@@ -301,32 +301,109 @@ class StudentController {
     }
 
     public function downloadLetter(): void {
-        Auth::requireRole('student');
-        $userId = Auth::id();
+        Auth::requireRole(['student', 'coordinator', 'admin']);
         $db = Database::getInstance();
 
-        $studentStmt = $db->prepare("
-            SELECT s.*, u.full_name, u.email, d.name AS department_name 
-            FROM students s 
-            JOIN users u ON s.user_id = u.id 
-            LEFT JOIN departments d ON s.department_id = d.id 
-            WHERE s.user_id = :uid
-        ");
-        $studentStmt->execute(['uid' => $userId]);
-        $student = $studentStmt->fetch();
+        if (Auth::role() === 'student') {
+            $userId = Auth::id();
+            $studentStmt = $db->prepare("
+                SELECT s.*, u.full_name, u.email, d.name AS department_name 
+                FROM students s 
+                JOIN users u ON s.user_id = u.id 
+                LEFT JOIN departments d ON s.department_id = d.id 
+                WHERE s.user_id = :uid
+            ");
+            $studentStmt->execute(['uid' => $userId]);
+            $student = $studentStmt->fetch();
 
-        $allocStmt = $db->prepare("
-            SELECT a.*, c.name AS company_name, c.address AS company_address, c.state AS company_state, c.city AS company_city, c.contact_person 
-            FROM allocations a 
-            JOIN companies c ON a.company_id = c.id 
-            WHERE a.student_id = :sid AND a.status != 'Cancelled'
-        ");
-        $allocStmt->execute(['sid' => $student['id']]);
-        $allocation = $allocStmt->fetch();
+            $allocStmt = $db->prepare("
+                SELECT a.*, c.name AS company_name, c.address AS company_address, c.state AS company_state, c.city AS company_city, c.contact_person 
+                FROM allocations a 
+                JOIN companies c ON a.company_id = c.id 
+                WHERE a.student_id = :sid AND a.status != 'Cancelled'
+            ");
+            $allocStmt->execute(['sid' => $student['id']]);
+            $allocation = $allocStmt->fetch();
 
-        if (!$allocation) {
-            Helper::setFlash('warning', 'You have not been allocated to an organization yet.');
-            Helper::redirect('dashboard');
+            if (!$allocation) {
+                // If student has not been allocated yet, provide prospective intro letter
+                $allocation = [
+                    'company_name'    => 'The Human Resources Manager / Prospective Employer',
+                    'company_address' => 'Corporate Organization / Industrial Partner',
+                    'company_city'    => 'Placement City',
+                    'company_state'   => 'Target State',
+                    'start_date'      => date('Y-m-d', strtotime('+2 weeks')),
+                    'end_date'        => date('Y-m-d', strtotime('+26 weeks')),
+                    'is_prospective'  => true
+                ];
+            }
+        } else {
+            // Coordinator or Admin preview
+            $studentId = (int)($_GET['student_id'] ?? 0);
+            if ($studentId > 0) {
+                $studentStmt = $db->prepare("
+                    SELECT s.*, u.full_name, u.email, d.name AS department_name 
+                    FROM students s 
+                    JOIN users u ON s.user_id = u.id 
+                    LEFT JOIN departments d ON s.department_id = d.id 
+                    WHERE s.id = :sid
+                ");
+                $studentStmt->execute(['sid' => $studentId]);
+                $student = $studentStmt->fetch();
+
+                $allocStmt = $db->prepare("
+                    SELECT a.*, c.name AS company_name, c.address AS company_address, c.state AS company_state, c.city AS company_city, c.contact_person 
+                    FROM allocations a 
+                    JOIN companies c ON a.company_id = c.id 
+                    WHERE a.student_id = :sid AND a.status != 'Cancelled'
+                ");
+                $allocStmt->execute(['sid' => $studentId]);
+                $allocation = $allocStmt->fetch();
+            }
+
+            // Fallback demo student if none chosen
+            if (empty($student)) {
+                $firstStudent = $db->query("
+                    SELECT s.*, u.full_name, u.email, d.name AS department_name 
+                    FROM students s 
+                    JOIN users u ON s.user_id = u.id 
+                    LEFT JOIN departments d ON s.department_id = d.id 
+                    ORDER BY s.id ASC LIMIT 1
+                ")->fetch();
+
+                if ($firstStudent) {
+                    $student = $firstStudent;
+                    $allocStmt = $db->prepare("
+                        SELECT a.*, c.name AS company_name, c.address AS company_address, c.state AS company_state, c.city AS company_city, c.contact_person 
+                        FROM allocations a 
+                        JOIN companies c ON a.company_id = c.id 
+                        WHERE a.student_id = :sid AND a.status != 'Cancelled'
+                    ");
+                    $allocStmt->execute(['sid' => $student['id']]);
+                    $allocation = $allocStmt->fetch();
+                } else {
+                    $student = [
+                        'id' => 1,
+                        'full_name' => 'Chidubem Chukwuma',
+                        'matric_number' => 'F/ND/22/3210001',
+                        'programme' => 'ND',
+                        'level' => 'ND2',
+                        'department_name' => 'Computer Science'
+                    ];
+                }
+            }
+
+            if (empty($allocation)) {
+                $allocation = [
+                    'company_name'    => 'Interswitch Group Tech Hub',
+                    'company_address' => 'Plot 1644, Oko Awo Street, Victoria Island',
+                    'company_city'    => 'Lagos',
+                    'company_state'   => 'Lagos',
+                    'start_date'      => date('Y-m-d', strtotime('+2 weeks')),
+                    'end_date'        => date('Y-m-d', strtotime('+26 weeks')),
+                    'is_prospective'  => false
+                ];
+            }
         }
 
         require __DIR__ . '/../Views/student/allocation_letter.php';

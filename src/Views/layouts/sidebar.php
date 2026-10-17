@@ -75,6 +75,9 @@ $siteSettings = Helper::getAllSettings();
                 <a class="nav-link <?= $currentRoute === 'coordinator/companies' ? 'active' : '' ?>" href="<?= $baseUrl ?>/index.php?route=coordinator/companies">
                     <i class="fa-solid fa-building"></i> Companies
                 </a>
+                <a class="nav-link <?= str_contains($currentRoute, 'letter-template') ? 'active' : '' ?>" href="<?= $baseUrl ?>/index.php?route=coordinator/letter-template">
+                    <i class="fa-solid fa-file-signature"></i> Application Letter
+                </a>
                 <a class="nav-link <?= $currentRoute === 'reports' ? 'active' : '' ?>" href="<?= $baseUrl ?>/index.php?route=reports">
                     <i class="fa-solid fa-chart-column"></i> Reports & Analytics
                 </a>
@@ -91,6 +94,9 @@ $siteSettings = Helper::getAllSettings();
                     </a>
                     <a class="nav-link <?= str_contains($currentRoute, 'companies') ? 'active' : '' ?>" href="<?= $baseUrl ?>/index.php?route=coordinator/companies">
                         <i class="fa-solid fa-building"></i> Partner Companies
+                    </a>
+                    <a class="nav-link <?= str_contains($currentRoute, 'letter-template') ? 'active' : '' ?>" href="<?= $baseUrl ?>/index.php?route=admin/letter-template">
+                        <i class="fa-solid fa-file-signature"></i> Application Letter
                     </a>
                     <a class="nav-link <?= $currentRoute === 'admin/settings' ? 'active' : '' ?>" href="<?= $baseUrl ?>/index.php?route=admin/settings">
                         <i class="fa-solid fa-sliders"></i> Landing Page CMS

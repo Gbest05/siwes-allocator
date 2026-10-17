@@ -543,5 +543,54 @@ class CoordinatorController {
 
         Helper::redirect('coordinator/supervisors');
     }
+
+    /**
+     * View and Edit Official SIWES Application & Placement Letter Content Template
+     */
+    public function letterTemplate(): void {
+        Auth::requireRole(['coordinator', 'admin']);
+        $settings = Helper::getAllSettings();
+        require __DIR__ . '/../Views/coordinator/letter_template.php';
+    }
+
+    /**
+     * Save Updates to Official SIWES Application & Placement Letter Content Template
+     */
+    public function updateLetterTemplate(): void {
+        Auth::requireRole(['coordinator', 'admin']);
+        if (!Helper::verifyCsrf($_POST['csrf_token'] ?? '')) {
+            Helper::setFlash('danger', 'Invalid security token.');
+            Helper::redirect('coordinator/letter-template');
+        }
+
+        $fields = [
+            'letter_institution_name',
+            'letter_directorate_title',
+            'letter_contact_info',
+            'letter_ref_prefix',
+            'letter_title',
+            'letter_salutation',
+            'letter_body_intro',
+            'letter_body_training',
+            'letter_body_conclusion',
+            'letter_closing',
+            'letter_signatory_name',
+            'letter_signatory_title',
+            'letter_seal_text'
+        ];
+
+        foreach ($fields as $field) {
+            if (isset($_POST[$field])) {
+                Helper::setSetting($field, trim($_POST[$field]));
+            }
+        }
+
+        Helper::setFlash('success', 'Official SIWES Application & Placement Letter content updated successfully!');
+        $redirectRoute = Auth::role() === 'admin' && str_contains($_SERVER['REQUEST_URI'] ?? '', 'admin/letter-template')
+            ? 'admin/letter-template'
+            : 'coordinator/letter-template';
+        Helper::redirect($redirectRoute);
+    }
 }
+
 
