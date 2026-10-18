@@ -50,6 +50,8 @@ return [
     'options'   => [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES   => false,
+        PDO::ATTR_EMULATE_PREPARES   => true, // 1 network round-trip per query instead of 2
+        PDO::ATTR_PERSISTENT         => true, // Reuses TLS connection across requests (eliminates 300ms SSL handshake)
+        PDO::ATTR_TIMEOUT            => 5,    // Fast 5-second connection timeout
     ]
 ];

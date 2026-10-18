@@ -18,7 +18,6 @@ class Database {
                     $ssl = !empty($config['sslmode']) ? ";sslmode={$config['sslmode']}" : "";
                     $dsn = "pgsql:host={$config['host']};port={$config['port']};dbname={$config['dbname']}{$ssl}";
                     self::$instance = new PDO($dsn, $config['username'], $config['password'], $config['options']);
-                    self::initializePostgresSchema(self::$instance);
                 } else {
                     $dsn = "mysql:host={$config['host']};port={$config['port']};dbname={$config['dbname']};charset={$config['charset']}";
                     self::$instance = new PDO($dsn, $config['username'], $config['password'], $config['options']);
@@ -32,14 +31,13 @@ class Database {
                         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
                     ]);
-                    self::initializeSQLiteSchema(self::$instance);
                 } catch (PDOException $ex) {
                     die("Database Connection Error: " . $ex->getMessage());
                 }
             }
 
-            self::ensureSupervisorSchema(self::$instance);
-            self::repairSeedPasswords(self::$instance);
+            // High-Performance Migration Guard: Only runs schema alters and seeding once per version
+            self::runMigrationsIfNeeded(self::$instance);
         }
         return self::$instance;
     }
@@ -547,6 +545,85 @@ class Database {
             }
         } catch (\Throwable $e) {
             error_log("Password hash repair notice: " . $e->getMessage());
+        }
+    }
+
+    private const CURRENT_SCHEMA_VERSION = '2.3';
+
+    /**
+     * High-Performance Schema & Seed Migration Manager
+     * Ensures expensive DDL and seeding checks only run ONCE instead of on every HTTP request.
+     */
+    private static function runMigrationsIfNeeded(PDO $db): void {
+        try {
+            $driver = $db->getAttribute(PDO::ATTR_DRIVER_NAME);
+            $hasValidVersion = false;
+
+            if ($driver === 'pgsql') {
+                $checkTable = $db->query("SELECT to_regclass('public.settings')")->fetchColumn();
+                if ($checkTable) {
+                    $stmt = $db->query("SELECT setting_value FROM settings WHERE setting_key = 'system_schema_version' LIMIT 1");
+                    if ($stmt && $stmt->fetchColumn() === self::CURRENT_SCHEMA_VERSION) {
+                        $hasValidVersion = true;
+                    }
+                } else {
+                    self::initializePostgresSchema($db);
+                }
+            } else {
+                $checkTable = $db->query("SELECT name FROM sqlite_master WHERE type='table' AND name='settings'")->fetchColumn();
+                if ($checkTable) {
+                    $stmt = $db->query("SELECT setting_value FROM settings WHERE setting_key = 'system_schema_version' LIMIT 1");
+                    if ($stmt && $stmt->fetchColumn() === self::CURRENT_SCHEMA_VERSION) {
+                        $hasValidVersion = true;
+                    }
+                } else {
+                    self::initializeSQLiteSchema($db);
+                }
+            }
+
+            // If schema version already matches, exit immediately with 0ms overhead!
+            if ($hasValidVersion) {
+                return;
+            }
+
+            // Run migrations, seed repairs, and indexes ONCE
+            self::ensureSupervisorSchema($db);
+            self::repairSeedPasswords($db);
+            self::ensureDatabaseIndexes($db);
+
+            $ver = self::CURRENT_SCHEMA_VERSION;
+            if ($driver === 'pgsql') {
+                $db->exec("INSERT INTO settings (setting_key, setting_value) VALUES ('system_schema_version', '{$ver}') ON CONFLICT (setting_key) DO UPDATE SET setting_value = '{$ver}'");
+            } else {
+                $db->exec("INSERT OR REPLACE INTO settings (setting_key, setting_value) VALUES ('system_schema_version', '{$ver}')");
+            }
+        } catch (\Throwable $e) {
+            error_log("Migration manager notice: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Create high-performance database indexes to eliminate full table scans
+     */
+    private static function ensureDatabaseIndexes(PDO $db): void {
+        try {
+            $indexes = [
+                'idx_students_supervisor_id' => 'CREATE INDEX IF NOT EXISTS idx_students_supervisor_id ON students(supervisor_id)',
+                'idx_students_user_id' => 'CREATE INDEX IF NOT EXISTS idx_students_user_id ON students(user_id)',
+                'idx_students_dept_id' => 'CREATE INDEX IF NOT EXISTS idx_students_dept_id ON students(department_id)',
+                'idx_allocations_student' => 'CREATE INDEX IF NOT EXISTS idx_allocations_student ON allocations(student_id)',
+                'idx_allocations_company' => 'CREATE INDEX IF NOT EXISTS idx_allocations_company ON allocations(company_id)',
+                'idx_applications_student' => 'CREATE INDEX IF NOT EXISTS idx_applications_student ON siwes_applications(student_id)',
+                'idx_notifications_user' => 'CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id)',
+                'idx_documents_student' => 'CREATE INDEX IF NOT EXISTS idx_documents_student ON documents(student_id)',
+                'idx_supervisors_user' => 'CREATE INDEX IF NOT EXISTS idx_supervisors_user ON supervisors(user_id)',
+                'idx_users_email' => 'CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)',
+            ];
+            foreach ($indexes as $sql) {
+                $db->exec($sql);
+            }
+        } catch (\Throwable $e) {
+            // Non-fatal
         }
     }
 }

@@ -156,19 +156,18 @@ class Helper {
         ];
     }
 
+    private static ?array $settingsCache = null;
+
     public static function getSetting(string $key, string $default = ''): string {
-        try {
-            $db = Database::getInstance();
-            $stmt = $db->prepare("SELECT setting_value FROM settings WHERE setting_key = :key LIMIT 1");
-            $stmt->execute(['key' => $key]);
-            $val = $stmt->fetchColumn();
-            return ($val !== false && $val !== null && $val !== '') ? $val : $default;
-        } catch (\Exception $e) {
-            return $default;
-        }
+        $settings = self::getAllSettings();
+        return (isset($settings[$key]) && $settings[$key] !== '') ? (string)$settings[$key] : $default;
     }
 
     public static function getAllSettings(): array {
+        if (self::$settingsCache !== null) {
+            return self::$settingsCache;
+        }
+
         $defaults = [
             'site_name'            => 'SIWES Allocator',
             'institution_name'     => 'School of Technology & Applied Sciences',
@@ -217,10 +216,12 @@ class Helper {
             // fallback to defaults
         }
 
-        return $defaults;
+        self::$settingsCache = $defaults;
+        return self::$settingsCache;
     }
 
     public static function setSetting(string $key, string $value): void {
+        self::$settingsCache = null; // Clear cache on update
         $db = Database::getInstance();
         $check = $db->prepare("SELECT id FROM settings WHERE setting_key = :k");
         $check->execute(['k' => $key]);
