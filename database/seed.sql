@@ -11,15 +11,15 @@ INSERT INTO departments (id, name, code, description) VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- 2. Users (Admin, Coordinator, Students, Supervisors)
--- Password: password123
+-- Password: password123 (bcrypt: $2y$10$.faAMhHU8HSTlnEmvSd5weQMSgvTdbgf0dmwA5B.qG7VL7BWe3Mi2)
 INSERT INTO users (id, full_name, email, password_hash, role) VALUES
-(1, 'Prof. Emmanuel Okafor', 'admin@siwesp.edu.ng', '$2y$10$r.7gB.K4a0G.1YqJ2pU5E.Z7R3L2N4P5Q6R7S8T9U0V1W2X3Y4Z5a', 'admin'),
-(2, 'Dr. Mrs. Amina Yusuf', 'coordinator@siwesp.edu.ng', '$2y$10$r.7gB.K4a0G.1YqJ2pU5E.Z7R3L2N4P5Q6R7S8T9U0V1W2X3Y4Z5a', 'coordinator'),
-(3, 'Chidubem Chukwuma', 'student@siwesp.edu.ng', '$2y$10$r.7gB.K4a0G.1YqJ2pU5E.Z7R3L2N4P5Q6R7S8T9U0V1W2X3Y4Z5a', 'student'),
-(4, 'Fatima Abubakar', 'fatima@siwesp.edu.ng', '$2y$10$r.7gB.K4a0G.1YqJ2pU5E.Z7R3L2N4P5Q6R7S8T9U0V1W2X3Y4Z5a', 'student'),
-(5, 'Oluwaseun Adebayo', 'seun@siwesp.edu.ng', '$2y$10$r.7gB.K4a0G.1YqJ2pU5E.Z7R3L2N4P5Q6R7S8T9U0V1W2X3Y4Z5a', 'student'),
-(6, 'Blessing Danjuma', 'blessing@siwesp.edu.ng', '$2y$10$r.7gB.K4a0G.1YqJ2pU5E.Z7R3L2N4P5Q6R7S8T9U0V1W2X3Y4Z5a', 'student'),
-(7, 'Tunde Bakare', 'supervisor@technovate.ng', '$2y$10$r.7gB.K4a0G.1YqJ2pU5E.Z7R3L2N4P5Q6R7S8T9U0V1W2X3Y4Z5a', 'supervisor')
+(1, 'Prof. Emmanuel Okafor', 'admin@siwesp.edu.ng', '$2y$10$.faAMhHU8HSTlnEmvSd5weQMSgvTdbgf0dmwA5B.qG7VL7BWe3Mi2', 'admin'),
+(2, 'Dr. Mrs. Amina Yusuf', 'coordinator@siwesp.edu.ng', '$2y$10$.faAMhHU8HSTlnEmvSd5weQMSgvTdbgf0dmwA5B.qG7VL7BWe3Mi2', 'coordinator'),
+(3, 'Chidubem Chukwuma', 'student@siwesp.edu.ng', '$2y$10$.faAMhHU8HSTlnEmvSd5weQMSgvTdbgf0dmwA5B.qG7VL7BWe3Mi2', 'student'),
+(4, 'Fatima Abubakar', 'fatima@siwesp.edu.ng', '$2y$10$.faAMhHU8HSTlnEmvSd5weQMSgvTdbgf0dmwA5B.qG7VL7BWe3Mi2', 'student'),
+(5, 'Oluwaseun Adebayo', 'seun@siwesp.edu.ng', '$2y$10$.faAMhHU8HSTlnEmvSd5weQMSgvTdbgf0dmwA5B.qG7VL7BWe3Mi2', 'student'),
+(6, 'Blessing Danjuma', 'blessing@siwesp.edu.ng', '$2y$10$.faAMhHU8HSTlnEmvSd5weQMSgvTdbgf0dmwA5B.qG7VL7BWe3Mi2', 'student'),
+(7, 'Tunde Bakare', 'supervisor@technovate.ng', '$2y$10$.faAMhHU8HSTlnEmvSd5weQMSgvTdbgf0dmwA5B.qG7VL7BWe3Mi2', 'supervisor')
 ON CONFLICT (id) DO NOTHING;
 
 -- 3. Companies

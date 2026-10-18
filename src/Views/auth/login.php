@@ -89,11 +89,49 @@ $siteSettings = Helper::getAllSettings();
                         <span class="text-secondary fs-8">Don't have an account?</span>
                         <a href="<?= $baseUrl ?>/index.php?route=register" class="text-primary-green fw-bold text-decoration-none ms-1 fs-8">Create Account</a>
                     </div>
+
+                    <!-- Demo Credentials Quick-Fill -->
+                    <div class="mt-3 pt-2 border-top">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-secondary fw-semibold fs-8"><i class="fa-solid fa-key me-1 text-primary-green"></i> Demo Accounts</span>
+                            <span class="text-muted fs-9" style="font-size: 0.72rem;">Password: <code class="text-dark">password123</code></span>
+                        </div>
+                        <div class="d-grid gap-1" style="grid-template-columns: repeat(2, 1fr); display: grid;">
+                            <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2 fs-8 text-start demo-fill-btn" data-email="admin@siwesp.edu.ng" data-pass="password123" title="Click to fill Admin credentials">
+                                <i class="fa-solid fa-user-shield me-1 text-danger"></i> <strong>Admin</strong>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2 fs-8 text-start demo-fill-btn" data-email="coordinator@siwesp.edu.ng" data-pass="password123" title="Click to fill Coordinator credentials">
+                                <i class="fa-solid fa-user-tie me-1 text-primary"></i> <strong>Coordinator</strong>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2 fs-8 text-start demo-fill-btn" data-email="supervisor1@siwesp.edu.ng" data-pass="password123" title="Click to fill Supervisor credentials">
+                                <i class="fa-solid fa-chalkboard-user me-1 text-warning"></i> <strong>Supervisor</strong>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2 fs-8 text-start demo-fill-btn" data-email="student@siwesp.edu.ng" data-pass="password123" title="Click to fill Student credentials">
+                                <i class="fa-solid fa-user-graduate me-1 text-success"></i> <strong>Student</strong>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
             </div>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.demo-fill-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var emailInput = document.getElementById('login_id');
+            var passInput = document.getElementById('password');
+            if (emailInput && passInput) {
+                emailInput.value = this.getAttribute('data-email');
+                passInput.value = this.getAttribute('data-pass');
+                emailInput.focus();
+            }
+        });
+    });
+});
+</script>
 
 <?php require __DIR__ . '/../layouts/footer.php'; ?>

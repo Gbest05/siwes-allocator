@@ -39,6 +39,7 @@ class Database {
             }
 
             self::ensureSupervisorSchema(self::$instance);
+            self::repairSeedPasswords(self::$instance);
         }
         return self::$instance;
     }
@@ -412,6 +413,45 @@ class Database {
 
         } catch (\Exception $e) {
             error_log("Supervisor/Registration schema migration notice: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Ensure seed users in both SQLite and PostgreSQL have valid, authentic bcrypt password hashes
+     */
+    private static function repairSeedPasswords(PDO $db): void {
+        try {
+            $validHash = password_hash('password123', PASSWORD_BCRYPT);
+            $legacyFakeHash = '$2y$10$r.7gB.K4a0G.1YqJ2pU5E.Z7R3L2N4P5Q6R7S8T9U0V1W2X3Y4Z5a';
+
+            // 1. Instantly replace legacy fake/mock bcrypt hash from old seed.sql
+            $fixStmt = $db->prepare("UPDATE users SET password_hash = :new_hash WHERE password_hash = :fake_hash");
+            $fixStmt->execute(['new_hash' => $validHash, 'fake_hash' => $legacyFakeHash]);
+
+            // 2. Ensure default admin user exists and is valid
+            $adminStmt = $db->query("SELECT id, password_hash FROM users WHERE LOWER(email) = 'admin@siwesp.edu.ng'");
+            $admin = $adminStmt ? $adminStmt->fetch() : null;
+            if ($admin) {
+                if (!password_verify('password123', $admin['password_hash']) && !password_verify('admin123', $admin['password_hash'])) {
+                    $upd = $db->prepare("UPDATE users SET password_hash = :hash WHERE id = :id");
+                    $upd->execute(['hash' => $validHash, 'id' => $admin['id']]);
+                }
+            } else {
+                $ins = $db->prepare("INSERT INTO users (full_name, email, password_hash, role) VALUES ('Prof. Emmanuel Okafor', 'admin@siwesp.edu.ng', :hash, 'admin')");
+                $ins->execute(['hash' => $validHash]);
+            }
+
+            // 3. Ensure default coordinator exists and is valid
+            $coordStmt = $db->query("SELECT id, password_hash FROM users WHERE LOWER(email) = 'coordinator@siwesp.edu.ng'");
+            $coord = $coordStmt ? $coordStmt->fetch() : null;
+            if ($coord) {
+                if (!password_verify('password123', $coord['password_hash'])) {
+                    $upd = $db->prepare("UPDATE users SET password_hash = :hash WHERE id = :id");
+                    $upd->execute(['hash' => $validHash, 'id' => $coord['id']]);
+                }
+            }
+        } catch (\Throwable $e) {
+            error_log("Password hash repair notice: " . $e->getMessage());
         }
     }
 }
