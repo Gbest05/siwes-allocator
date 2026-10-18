@@ -222,6 +222,7 @@ class Database {
                     $db->exec(file_get_contents($seedFile));
                 }
             }
+            self::syncPostgresSequences($db);
         } catch (PDOException $e) {
             // Silently continue if tables already exist or permission boundary prevents to_regclass
         }
@@ -468,6 +469,9 @@ class Database {
                         is_active INT DEFAULT 1,
                         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
                     );
+                    UPDATE departments SET is_active = 1 WHERE is_active IS NULL;
+                    UPDATE academic_programmes SET is_active = 1 WHERE is_active IS NULL;
+                    UPDATE academic_levels SET is_active = 1 WHERE is_active IS NULL;
                 ");
             }
 
@@ -503,6 +507,8 @@ class Database {
                     $lStmt->execute(['c' => $l['code'], 'n' => $l['name']]);
                 }
             }
+
+            self::syncPostgresSequences($db);
 
         } catch (\Exception $e) {
             error_log("Supervisor/Registration schema migration notice: " . $e->getMessage());
@@ -548,7 +554,7 @@ class Database {
         }
     }
 
-    private const CURRENT_SCHEMA_VERSION = '2.3';
+    private const CURRENT_SCHEMA_VERSION = '2.4';
 
     /**
      * High-Performance Schema & Seed Migration Manager
@@ -590,6 +596,7 @@ class Database {
             self::ensureSupervisorSchema($db);
             self::repairSeedPasswords($db);
             self::ensureDatabaseIndexes($db);
+            self::syncPostgresSequences($db);
 
             $ver = self::CURRENT_SCHEMA_VERSION;
             if ($driver === 'pgsql') {
@@ -624,6 +631,48 @@ class Database {
             }
         } catch (\Throwable $e) {
             // Non-fatal
+        }
+    }
+
+    /**
+     * Synchronize all PostgreSQL sequences to MAX(id) + 1 to prevent
+     * "duplicate key value violates unique constraint *_pkey" errors
+     * when explicit IDs were inserted by seed.sql or migrations.
+     */
+    public static function syncPostgresSequences(PDO $db): void {
+        try {
+            if ($db->getAttribute(PDO::ATTR_DRIVER_NAME) !== 'pgsql') {
+                return;
+            }
+
+            $tables = [
+                'users', 'students', 'departments', 'academic_programmes', 'academic_levels',
+                'supervisors', 'companies', 'siwes_applications', 'allocations', 'documents',
+                'notifications', 'placement_reviews', 'activity_logs', 'settings'
+            ];
+
+            foreach ($tables as $tbl) {
+                try {
+                    $sql = '
+                        DO $$
+                        DECLARE
+                            seq_name text;
+                            max_id bigint;
+                        BEGIN
+                            seq_name := pg_get_serial_sequence(\'' . $tbl . '\', \'id\');
+                            IF seq_name IS NOT NULL THEN
+                                EXECUTE \'SELECT COALESCE(MAX(id), 0) + 1 FROM ' . $tbl . '\' INTO max_id;
+                                PERFORM setval(seq_name, max_id, false);
+                            END IF;
+                        END $$;
+                    ';
+                    $db->exec($sql);
+                } catch (\Throwable $ex) {
+                    // Ignore non-existent tables or non-serial columns
+                }
+            }
+        } catch (\Throwable $e) {
+            error_log("Postgres sequence sync notice: " . $e->getMessage());
         }
     }
 }

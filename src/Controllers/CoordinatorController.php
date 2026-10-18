@@ -519,6 +519,11 @@ class CoordinatorController {
                 'hash'  => $hash
             ]);
             $userId = (int)$db->lastInsertId();
+            if ($userId <= 0) {
+                $uStmt = $db->prepare("SELECT id FROM users WHERE LOWER(email) = LOWER(:email)");
+                $uStmt->execute(['email' => $email]);
+                $userId = (int)$uStmt->fetchColumn();
+            }
 
             $supStmt = $db->prepare("
                 INSERT INTO supervisors (user_id, department_id, staff_id, phone, designation)
@@ -534,8 +539,13 @@ class CoordinatorController {
 
             $db->commit();
             Helper::setFlash('success', "Supervisor {$fullName} created successfully with default password: password123");
-        } catch (\Exception $e) {
-            $db->rollBack();
+        } catch (\Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            if (str_contains($e->getMessage(), 'duplicate key') && str_contains($e->getMessage(), '_pkey')) {
+                \App\Core\Database::syncPostgresSequences($db);
+            }
             Helper::setFlash('danger', 'Failed to create supervisor: ' . $e->getMessage());
         }
 

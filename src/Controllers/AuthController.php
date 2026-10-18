@@ -97,9 +97,42 @@ class AuthController {
             Helper::redirect('dashboard');
         }
         $db = Database::getInstance();
-        $departments = $db->query("SELECT * FROM departments WHERE is_active = 1 ORDER BY name ASC")->fetchAll();
-        $programmes = $db->query("SELECT * FROM academic_programmes WHERE is_active = 1 ORDER BY id ASC")->fetchAll();
-        $levels = $db->query("SELECT * FROM academic_levels WHERE is_active = 1 ORDER BY id ASC")->fetchAll();
+        $departments = $db->query("SELECT * FROM departments WHERE is_active = 1 OR is_active IS NULL ORDER BY name ASC")->fetchAll();
+        if (empty($departments)) {
+            $departments = $db->query("SELECT * FROM departments ORDER BY name ASC")->fetchAll();
+        }
+
+        $programmes = [];
+        try {
+            $programmes = $db->query("SELECT * FROM academic_programmes WHERE is_active = 1 OR is_active IS NULL ORDER BY id ASC")->fetchAll();
+        } catch (\Throwable $e) {}
+
+        if (empty($programmes)) {
+            $programmes = [
+                ['code' => 'ND', 'name' => 'National Diploma (ND)'],
+                ['code' => 'HND', 'name' => 'Higher National Diploma (HND)'],
+                ['code' => 'BSc', 'name' => 'Bachelor of Science (B.Sc)'],
+                ['code' => 'BEng', 'name' => 'Bachelor of Engineering (B.Eng)']
+            ];
+        }
+
+        $levels = [];
+        try {
+            $levels = $db->query("SELECT * FROM academic_levels WHERE is_active = 1 OR is_active IS NULL ORDER BY id ASC")->fetchAll();
+        } catch (\Throwable $e) {}
+
+        if (empty($levels)) {
+            $levels = [
+                ['code' => 'ND1', 'name' => 'ND 1'],
+                ['code' => 'ND2', 'name' => 'ND 2'],
+                ['code' => 'HND1', 'name' => 'HND 1'],
+                ['code' => 'HND2', 'name' => 'HND 2'],
+                ['code' => '200L', 'name' => '200 Level'],
+                ['code' => '300L', 'name' => '300 Level'],
+                ['code' => '400L', 'name' => '400 Level']
+            ];
+        }
+
         require __DIR__ . '/../Views/auth/register.php';
     }
 
@@ -131,39 +164,53 @@ class AuthController {
 
         $db = Database::getInstance();
 
-        // Validate department is active
-        $deptCheck = $db->prepare("SELECT id FROM departments WHERE id = :id AND is_active = 1");
+        // Validate department
+        $deptCheck = $db->prepare("SELECT id FROM departments WHERE id = :id AND (is_active = 1 OR is_active IS NULL)");
         $deptCheck->execute(['id' => $deptId]);
         if (!$deptCheck->fetch()) {
-            Helper::setFlash('warning', 'Please select a valid, active academic department.');
-            Helper::redirect('register');
+            $anyDept = $db->prepare("SELECT id FROM departments WHERE id = :id");
+            $anyDept->execute(['id' => $deptId]);
+            if (!$anyDept->fetch()) {
+                Helper::setFlash('warning', 'Please select a valid academic department.');
+                Helper::redirect('register');
+            }
         }
 
-        // Validate programme is active
-        $progCheck = $db->prepare("SELECT id FROM academic_programmes WHERE code = :code AND is_active = 1");
-        $progCheck->execute(['code' => $programme]);
-        if (!$progCheck->fetch()) {
-            Helper::setFlash('warning', 'Please select a valid, active academic programme.');
-            Helper::redirect('register');
-        }
+        // Validate programme if table is present
+        try {
+            $progCheck = $db->prepare("SELECT id FROM academic_programmes WHERE code = :code");
+            $progCheck->execute(['code' => $programme]);
+            if (!$progCheck->fetch()) {
+                $validProgCodes = ['ND', 'HND', 'BSC', 'BENG'];
+                if (!in_array(strtoupper($programme), $validProgCodes)) {
+                    Helper::setFlash('warning', 'Please select a valid academic programme.');
+                    Helper::redirect('register');
+                }
+            }
+        } catch (\Throwable $e) {}
 
-        // Validate level is active
-        $lvlCheck = $db->prepare("SELECT id FROM academic_levels WHERE code = :code AND is_active = 1");
-        $lvlCheck->execute(['code' => $level]);
-        if (!$lvlCheck->fetch()) {
-            Helper::setFlash('warning', 'Please select a valid, active academic level.');
-            Helper::redirect('register');
-        }
+        // Validate level if table is present
+        try {
+            $lvlCheck = $db->prepare("SELECT id FROM academic_levels WHERE code = :code");
+            $lvlCheck->execute(['code' => $level]);
+            if (!$lvlCheck->fetch()) {
+                $validLvlCodes = ['ND1', 'ND2', 'HND1', 'HND2', '100L', '200L', '300L', '400L', '500L'];
+                if (!in_array(strtoupper($level), $validLvlCodes)) {
+                    Helper::setFlash('warning', 'Please select a valid academic level.');
+                    Helper::redirect('register');
+                }
+            }
+        } catch (\Throwable $e) {}
 
         // Check if email or matric number already exists
-        $checkStmt = $db->prepare("SELECT id FROM users WHERE email = :email");
+        $checkStmt = $db->prepare("SELECT id FROM users WHERE LOWER(email) = LOWER(:email)");
         $checkStmt->execute(['email' => $email]);
         if ($checkStmt->fetch()) {
             Helper::setFlash('danger', 'An account with this email address already exists.');
             Helper::redirect('register');
         }
 
-        $matStmt = $db->prepare("SELECT id FROM students WHERE matric_number = :matric");
+        $matStmt = $db->prepare("SELECT id FROM students WHERE UPPER(matric_number) = UPPER(:matric)");
         $matStmt->execute(['matric' => $matricNumber]);
         if ($matStmt->fetch()) {
             Helper::setFlash('danger', 'A student with this Matriculation Number already exists.');
@@ -183,7 +230,18 @@ class AuthController {
                 'email' => $email,
                 'hash' => $passwordHash
             ]);
+
+            // Retrieve generated user ID reliably across PostgreSQL and SQLite
             $userId = (int)$db->lastInsertId();
+            if ($userId <= 0) {
+                $uStmt = $db->prepare("SELECT id FROM users WHERE LOWER(email) = LOWER(:email)");
+                $uStmt->execute(['email' => $email]);
+                $userId = (int)$uStmt->fetchColumn();
+            }
+
+            if ($userId <= 0) {
+                throw new \Exception("Could not create user account. Please try again.");
+            }
 
             $studentStmt = $db->prepare("
                 INSERT INTO students (user_id, matric_number, department_id, programme, level, phone) 
@@ -198,12 +256,16 @@ class AuthController {
                 'phone' => $phone
             ]);
 
-            // Add Welcome Notification
-            $notifStmt = $db->prepare("
-                INSERT INTO notifications (user_id, title, message, type) 
-                VALUES (:user_id, 'Registration Successful', 'Welcome to the SIWES Portal! Please complete your SIWES application and upload your documents.', 'success')
-            ");
-            $notifStmt->execute(['user_id' => $userId]);
+            // Add Welcome Notification (non-fatal if notification sequence needs sync)
+            try {
+                $notifStmt = $db->prepare("
+                    INSERT INTO notifications (user_id, title, message, type) 
+                    VALUES (:user_id, 'Registration Successful', 'Welcome to the SIWES Portal! Please complete your SIWES application and upload your documents.', 'success')
+                ");
+                $notifStmt->execute(['user_id' => $userId]);
+            } catch (\Throwable $notifEx) {
+                error_log("Welcome notification notice: " . $notifEx->getMessage());
+            }
 
             $db->commit();
 
@@ -218,9 +280,71 @@ class AuthController {
             Helper::setFlash('success', 'Registration successful! Welcome to your SIWES dashboard.');
             Helper::redirect('dashboard');
 
-        } catch (\Exception $e) {
-            $db->rollBack();
-            Helper::setFlash('danger', 'Registration failed: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+
+            $errorMsg = $e->getMessage();
+
+            // PostgreSQL sequence repair & retry on duplicate primary key collision
+            if (str_contains($errorMsg, 'duplicate key') && str_contains($errorMsg, '_pkey')) {
+                Database::syncPostgresSequences($db);
+                try {
+                    $db->beginTransaction();
+                    $userStmt->execute([
+                        'name' => $fullName,
+                        'email' => $email,
+                        'hash' => $passwordHash
+                    ]);
+
+                    $uStmt = $db->prepare("SELECT id FROM users WHERE LOWER(email) = LOWER(:email)");
+                    $uStmt->execute(['email' => $email]);
+                    $userId = (int)$uStmt->fetchColumn();
+
+                    $studentStmt->execute([
+                        'user_id' => $userId,
+                        'matric' => $matricNumber,
+                        'dept_id' => $deptId,
+                        'prog' => $programme,
+                        'level' => $level,
+                        'phone' => $phone
+                    ]);
+
+                    try {
+                        $notifStmt->execute(['user_id' => $userId]);
+                    } catch (\Throwable $nt) {}
+
+                    $db->commit();
+
+                    Auth::login([
+                        'id' => $userId,
+                        'full_name' => $fullName,
+                        'email' => $email,
+                        'role' => 'student'
+                    ]);
+
+                    Helper::setFlash('success', 'Registration successful! Welcome to your SIWES dashboard.');
+                    Helper::redirect('dashboard');
+                    return;
+                } catch (\Throwable $retryEx) {
+                    if ($db->inTransaction()) {
+                        $db->rollBack();
+                    }
+                    $errorMsg = $retryEx->getMessage();
+                }
+            }
+
+            $userFriendly = $errorMsg;
+            if (str_contains($errorMsg, 'users_email_key') || str_contains($errorMsg, 'users.email')) {
+                $userFriendly = 'An account with this email address already exists.';
+            } elseif (str_contains($errorMsg, 'students_matric_number_key') || str_contains($errorMsg, 'students.matric_number')) {
+                $userFriendly = 'A student with this Matriculation Number already exists.';
+            } elseif (str_contains($errorMsg, 'duplicate key')) {
+                $userFriendly = 'An account with these details already exists. Please check your matric number or email.';
+            }
+
+            Helper::setFlash('danger', 'Registration failed: ' . $userFriendly);
             Helper::redirect('register');
         }
     }

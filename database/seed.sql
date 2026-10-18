@@ -122,3 +122,16 @@ INSERT INTO settings (setting_key, setting_value) VALUES
 ('max_file_size_mb', '5'),
 ('allocation_mode', 'Smart Automated Engine with Manual Override')
 ON CONFLICT (setting_key) DO NOTHING;
+
+-- 12. Synchronize all PostgreSQL sequences to prevent duplicate key conflicts
+SELECT setval(pg_get_serial_sequence('users', 'id'), COALESCE(MAX(id), 1)) FROM users;
+SELECT setval(pg_get_serial_sequence('departments', 'id'), COALESCE(MAX(id), 1)) FROM departments;
+SELECT setval(pg_get_serial_sequence('academic_programmes', 'id'), COALESCE(MAX(id), 1)) FROM academic_programmes;
+SELECT setval(pg_get_serial_sequence('academic_levels', 'id'), COALESCE(MAX(id), 1)) FROM academic_levels;
+SELECT setval(pg_get_serial_sequence('supervisors', 'id'), COALESCE(MAX(id), 1)) FROM supervisors;
+SELECT setval(pg_get_serial_sequence('companies', 'id'), COALESCE(MAX(id), 1)) FROM companies;
+SELECT setval(pg_get_serial_sequence('students', 'id'), COALESCE(MAX(id), 1)) FROM students;
+SELECT setval(pg_get_serial_sequence('siwes_applications', 'id'), COALESCE(MAX(id), 1)) FROM siwes_applications;
+SELECT setval(pg_get_serial_sequence('allocations', 'id'), COALESCE(MAX(id), 1)) FROM allocations;
+SELECT setval(pg_get_serial_sequence('documents', 'id'), COALESCE(MAX(id), 1)) FROM documents;
+SELECT setval(pg_get_serial_sequence('notifications', 'id'), COALESCE(MAX(id), 1)) FROM notifications;
