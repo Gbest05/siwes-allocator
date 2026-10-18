@@ -42,28 +42,25 @@ class AdminController {
 
         // 1. Departments with Enrolled Student Count
         $departments = $db->query("
-            SELECT d.*, COUNT(s.id) AS student_count
+            SELECT d.*, 
+                   (SELECT COUNT(*) FROM students WHERE department_id = d.id) AS student_count
             FROM departments d
-            LEFT JOIN students s ON d.id = s.department_id
-            GROUP BY d.id
             ORDER BY d.name ASC
         ")->fetchAll();
 
         // 2. Programmes with Enrolled Student Count
         $programmes = $db->query("
-            SELECT p.*, COUNT(s.id) AS student_count
+            SELECT p.*, 
+                   (SELECT COUNT(*) FROM students WHERE programme = p.code) AS student_count
             FROM academic_programmes p
-            LEFT JOIN students s ON p.code = s.programme
-            GROUP BY p.id
             ORDER BY p.id ASC
         ")->fetchAll();
 
         // 3. Levels with Enrolled Student Count
         $levels = $db->query("
-            SELECT l.*, COUNT(s.id) AS student_count
+            SELECT l.*, 
+                   (SELECT COUNT(*) FROM students WHERE level = l.code) AS student_count
             FROM academic_levels l
-            LEFT JOIN students s ON l.code = s.level
-            GROUP BY l.id
             ORDER BY l.id ASC
         ")->fetchAll();
 

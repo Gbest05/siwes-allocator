@@ -265,72 +265,167 @@ class Database {
                         id SERIAL PRIMARY KEY,
                         user_id INT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
                         department_id INT REFERENCES departments(id) ON DELETE SET NULL,
-                        staff_id VARCHAR(100) UNIQUE,
+                        staff_id VARCHAR(100),
                         phone VARCHAR(50),
                         designation VARCHAR(100) DEFAULT 'Institution Supervisor',
                         max_capacity INT DEFAULT 20,
                         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
                     );
                     ALTER TABLE supervisors ADD COLUMN IF NOT EXISTS department_id INT REFERENCES departments(id) ON DELETE SET NULL;
-                    ALTER TABLE supervisors ADD COLUMN IF NOT EXISTS staff_id VARCHAR(100) UNIQUE;
+                    ALTER TABLE supervisors ADD COLUMN IF NOT EXISTS staff_id VARCHAR(100);
                     ALTER TABLE supervisors ADD COLUMN IF NOT EXISTS max_capacity INT DEFAULT 20;
                     ALTER TABLE supervisors ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
 
                     ALTER TABLE students ADD COLUMN IF NOT EXISTS supervisor_id INT REFERENCES users(id) ON DELETE SET NULL;
                     ALTER TABLE students ADD COLUMN IF NOT EXISTS supervisor_assigned_at TIMESTAMP WITH TIME ZONE DEFAULT NULL;
                     ALTER TABLE students ADD COLUMN IF NOT EXISTS supervisor_assigned_by INT REFERENCES users(id) ON DELETE SET NULL;
+
+                    ALTER TABLE students DROP CONSTRAINT IF EXISTS students_programme_check;
+                    ALTER TABLE students DROP CONSTRAINT IF EXISTS students_level_check;
                 ");
             }
 
-            // 3. Seed demo supervisors if none exist
-            $supCount = (int)$db->query("SELECT COUNT(*) FROM users WHERE role = 'supervisor'")->fetchColumn();
+            // 3. Ensure All 3 Institutional Supervisors exist in users and supervisors table
             $hash = password_hash('password123', PASSWORD_BCRYPT);
+            $demoSupervisors = [
+                ['name' => 'Engr. Tunde Bakare', 'email' => 'supervisor1@siwesp.edu.ng', 'dept' => 1, 'staff_id' => 'SUP/COM/001', 'phone' => '08031234567', 'designation' => 'Senior Lecturer & SIWES Supervisor'],
+                ['name' => 'Dr. Mrs. Nkechi Egwu', 'email' => 'supervisor2@siwesp.edu.ng', 'dept' => 2, 'staff_id' => 'SUP/EEE/002', 'phone' => '08029876543', 'designation' => 'Principal Supervisor'],
+                ['name' => 'Dr. Farouk Umar', 'email' => 'supervisor3@siwesp.edu.ng', 'dept' => 3, 'staff_id' => 'SUP/IFT/003', 'phone' => '08055512345', 'designation' => 'SIWES Academic Supervisor']
+            ];
 
-            if ($supCount === 0) {
-                // Supervisor 1: Engr. Tunde Bakare
-                $db->exec("INSERT INTO users (full_name, email, password_hash, role) VALUES 
-                    ('Engr. Tunde Bakare', 'supervisor1@siwesp.edu.ng', '{$hash}', 'supervisor')");
-                $sup1UserId = (int)$db->query("SELECT id FROM users WHERE email = 'supervisor1@siwesp.edu.ng'")->fetchColumn();
-                $db->exec("INSERT INTO supervisors (user_id, department_id, staff_id, phone, designation) VALUES 
-                    ({$sup1UserId}, 1, 'SUP/COM/001', '08031234567', 'Senior Lecturer & SIWES Supervisor')");
+            foreach ($demoSupervisors as $ds) {
+                $uStmt = $db->prepare("SELECT id FROM users WHERE LOWER(email) = LOWER(:email)");
+                $uStmt->execute(['email' => $ds['email']]);
+                $uId = $uStmt->fetchColumn();
 
-                // Supervisor 2: Dr. Mrs. Nkechi Egwu
-                $db->exec("INSERT INTO users (full_name, email, password_hash, role) VALUES 
-                    ('Dr. Mrs. Nkechi Egwu', 'supervisor2@siwesp.edu.ng', '{$hash}', 'supervisor')");
-                $sup2UserId = (int)$db->query("SELECT id FROM users WHERE email = 'supervisor2@siwesp.edu.ng'")->fetchColumn();
-                $db->exec("INSERT INTO supervisors (user_id, department_id, staff_id, phone, designation) VALUES 
-                    ({$sup2UserId}, 2, 'SUP/EEE/002', '08029876543', 'Principal Supervisor')");
+                if (!$uId) {
+                    $insUser = $db->prepare("INSERT INTO users (full_name, email, password_hash, role) VALUES (:name, :email, :hash, 'supervisor')");
+                    $insUser->execute(['name' => $ds['name'], 'email' => $ds['email'], 'hash' => $hash]);
+                    $uStmt->execute(['email' => $ds['email']]);
+                    $uId = $uStmt->fetchColumn();
+                }
 
-                // Supervisor 3: Dr. Farouk Umar
-                $db->exec("INSERT INTO users (full_name, email, password_hash, role) VALUES 
-                    ('Dr. Farouk Umar', 'supervisor3@siwesp.edu.ng', '{$hash}', 'supervisor')");
-                $sup3UserId = (int)$db->query("SELECT id FROM users WHERE email = 'supervisor3@siwesp.edu.ng'")->fetchColumn();
-                $db->exec("INSERT INTO supervisors (user_id, department_id, staff_id, phone, designation) VALUES 
-                    ({$sup3UserId}, 3, 'SUP/IFT/003', '08055512345', 'SIWES Academic Supervisor')");
+                if ($uId) {
+                    $sStmt = $db->prepare("SELECT id FROM supervisors WHERE user_id = :uid");
+                    $sStmt->execute(['uid' => $uId]);
+                    $sId = $sStmt->fetchColumn();
+
+                    if (!$sId) {
+                        $insSup = $db->prepare("INSERT INTO supervisors (user_id, department_id, staff_id, phone, designation, max_capacity) VALUES (:uid, :dept, :staff_id, :phone, :desig, 20)");
+                        $insSup->execute([
+                            'uid' => $uId,
+                            'dept' => $ds['dept'],
+                            'staff_id' => $ds['staff_id'],
+                            'phone' => $ds['phone'],
+                            'desig' => $ds['designation']
+                        ]);
+                    }
+                }
             }
 
-            // 4. Ensure there are at least 10 sample students for robust equal-distribution testing
-            $studentCount = (int)$db->query("SELECT COUNT(*) FROM students")->fetchColumn();
-            if ($studentCount < 10) {
-                $additionalStudents = [
-                    ['name' => 'Oluwaseun Adebayo', 'email' => 'seun@siwesp.edu.ng', 'matric' => 'F/ND/22/3210005', 'dept' => 2, 'prog' => 'ND', 'level' => 'ND2', 'phone' => '08098761234', 'industry' => 'Power & Electrical Grid', 'location' => 'Oyo'],
-                    ['name' => 'Blessing Danjuma', 'email' => 'blessing@siwesp.edu.ng', 'matric' => 'F/HND/22/3210006', 'dept' => 3, 'prog' => 'HND', 'level' => 'HND1', 'phone' => '08145556677', 'industry' => 'Telecommunications & Cloud', 'location' => 'Abuja'],
-                    ['name' => 'Emmanuel Bassey', 'email' => 'emmanuel@siwesp.edu.ng', 'matric' => 'F/ND/22/3210007', 'dept' => 1, 'prog' => 'ND', 'level' => 'ND2', 'phone' => '08021112233', 'industry' => 'Software Development & IT', 'location' => 'Lagos'],
-                    ['name' => 'Zainab Bello', 'email' => 'zainab@siwesp.edu.ng', 'matric' => 'F/HND/22/3210008', 'dept' => 4, 'prog' => 'HND', 'level' => 'HND2', 'phone' => '08034445566', 'industry' => 'Data Analytics & AI', 'location' => 'Lagos'],
-                    ['name' => 'Kelechi Okonkwo', 'email' => 'kelechi@siwesp.edu.ng', 'matric' => 'F/ND/22/3210009', 'dept' => 5, 'prog' => 'ND', 'level' => 'ND1', 'phone' => '08057778899', 'industry' => 'Hardware & Embedded Systems', 'location' => 'Rivers'],
-                    ['name' => 'Amina Mohammed', 'email' => 'amina.m@siwesp.edu.ng', 'matric' => 'F/HND/22/3210010', 'dept' => 1, 'prog' => 'HND', 'level' => 'HND2', 'phone' => '08089990011', 'industry' => 'Fintech & Cyber Security', 'location' => 'Lagos'],
-                    ['name' => 'David Adeleke', 'email' => 'david@siwesp.edu.ng', 'matric' => 'F/ND/22/3210011', 'dept' => 2, 'prog' => 'ND', 'level' => 'ND2', 'phone' => '08091114455', 'industry' => 'Renewable Energy & Power', 'location' => 'Lagos'],
-                    ['name' => 'Maryam Sani', 'email' => 'maryam@siwesp.edu.ng', 'matric' => 'F/HND/22/3210012', 'dept' => 3, 'prog' => 'HND', 'level' => 'HND1', 'phone' => '08132225566', 'industry' => 'Cloud Systems & Networking', 'location' => 'Abuja'],
-                ];
+            // Also ensure legacy supervisor@technovate.ng has a valid profile if present
+            $techSupId = $db->query("SELECT id FROM users WHERE LOWER(email) = 'supervisor@technovate.ng'")->fetchColumn();
+            if ($techSupId) {
+                $hasProf = $db->query("SELECT id FROM supervisors WHERE user_id = {$techSupId}")->fetchColumn();
+                if (!$hasProf) {
+                    $db->exec("INSERT INTO supervisors (user_id, department_id, staff_id, phone, designation, max_capacity) VALUES ({$techSupId}, 1, 'SUP/IND/004', '08031234567', 'Industry Technical Supervisor', 10)");
+                }
+            }
 
-                foreach ($additionalStudents as $st) {
-                    $exists = $db->query("SELECT id FROM users WHERE email = '{$st['email']}'")->fetch();
-                    if (!$exists) {
-                        $db->exec("INSERT INTO users (full_name, email, password_hash, role) VALUES ('{$st['name']}', '{$st['email']}', '{$hash}', 'student')");
-                        $uId = (int)$db->query("SELECT id FROM users WHERE email = '{$st['email']}'")->fetchColumn();
-                        $db->exec("INSERT INTO students (user_id, matric_number, department_id, programme, level, phone, address) VALUES ({$uId}, '{$st['matric']}', {$st['dept']}, '{$st['prog']}', '{$st['level']}', '{$st['phone']}', 'Campus Hall of Residence')");
-                        $sId = (int)$db->query("SELECT id FROM students WHERE user_id = {$uId}")->fetchColumn();
-                        $db->exec("INSERT INTO siwes_applications (student_id, preferred_industry, preferred_location, status, notes) VALUES ({$sId}, '{$st['industry']}', '{$st['location']}', 'Approved', 'Ready for supervisor and placement allocation.')");
+            // 4. Ensure Full Roster of 10 Students with Applications exists
+            $demoStudents = [
+                ['name' => 'Chidubem Chukwuma', 'email' => 'student@siwesp.edu.ng', 'matric' => 'F/ND/22/3210001', 'dept' => 1, 'prog' => 'ND', 'level' => 'ND2', 'phone' => '08123456789', 'industry' => 'Software Development & IT', 'location' => 'Lagos', 'status' => 'Allocated', 'notes' => 'Student expresses strong passion for full-stack web development.'],
+                ['name' => 'Fatima Abubakar', 'email' => 'fatima@siwesp.edu.ng', 'matric' => 'F/HND/22/3210002', 'dept' => 1, 'prog' => 'HND', 'level' => 'HND2', 'phone' => '08139876543', 'industry' => 'Fintech & Cyber Security', 'location' => 'Lagos', 'status' => 'Allocated', 'notes' => 'Student completed ND with distinction and requests high-impact placement.'],
+                ['name' => 'Oluwaseun Adebayo', 'email' => 'seun@siwesp.edu.ng', 'matric' => 'F/ND/22/3210003', 'dept' => 2, 'prog' => 'ND', 'level' => 'ND2', 'phone' => '08098761234', 'industry' => 'Power & Electrical Grid', 'location' => 'Oyo', 'status' => 'Submitted', 'notes' => 'Interested in power systems distribution.'],
+                ['name' => 'Blessing Danjuma', 'email' => 'blessing@siwesp.edu.ng', 'matric' => 'F/HND/22/3210004', 'dept' => 3, 'prog' => 'HND', 'level' => 'HND1', 'phone' => '08145556677', 'industry' => 'Telecommunications & Cloud', 'location' => 'Abuja', 'status' => 'Under Review', 'notes' => 'Seeking networking placement.'],
+                ['name' => 'Emmanuel Bassey', 'email' => 'emmanuel@siwesp.edu.ng', 'matric' => 'F/ND/22/3210007', 'dept' => 1, 'prog' => 'ND', 'level' => 'ND2', 'phone' => '08021112233', 'industry' => 'Software Development & IT', 'location' => 'Lagos', 'status' => 'Approved', 'notes' => 'Ready for supervisor and placement allocation.'],
+                ['name' => 'Zainab Bello', 'email' => 'zainab@siwesp.edu.ng', 'matric' => 'F/HND/22/3210008', 'dept' => 4, 'prog' => 'HND', 'level' => 'HND2', 'phone' => '08034445566', 'industry' => 'Data Analytics & AI', 'location' => 'Lagos', 'status' => 'Approved', 'notes' => 'Ready for supervisor and placement allocation.'],
+                ['name' => 'Kelechi Okonkwo', 'email' => 'kelechi@siwesp.edu.ng', 'matric' => 'F/ND/22/3210009', 'dept' => 5, 'prog' => 'ND', 'level' => 'ND1', 'phone' => '08057778899', 'industry' => 'Hardware & Embedded Systems', 'location' => 'Rivers', 'status' => 'Approved', 'notes' => 'Ready for supervisor and placement allocation.'],
+                ['name' => 'Amina Mohammed', 'email' => 'amina.m@siwesp.edu.ng', 'matric' => 'F/HND/22/3210010', 'dept' => 1, 'prog' => 'HND', 'level' => 'HND2', 'phone' => '08089990011', 'industry' => 'Fintech & Cyber Security', 'location' => 'Lagos', 'status' => 'Approved', 'notes' => 'Ready for supervisor and placement allocation.'],
+                ['name' => 'David Adeleke', 'email' => 'david@siwesp.edu.ng', 'matric' => 'F/ND/22/3210011', 'dept' => 2, 'prog' => 'ND', 'level' => 'ND2', 'phone' => '08091114455', 'industry' => 'Renewable Energy & Power', 'location' => 'Lagos', 'status' => 'Approved', 'notes' => 'Ready for supervisor and placement allocation.'],
+                ['name' => 'Maryam Sani', 'email' => 'maryam@siwesp.edu.ng', 'matric' => 'F/HND/22/3210012', 'dept' => 3, 'prog' => 'HND', 'level' => 'HND1', 'phone' => '08132225566', 'industry' => 'Cloud Systems & Networking', 'location' => 'Abuja', 'status' => 'Approved', 'notes' => 'Ready for supervisor and placement allocation.']
+            ];
+
+            foreach ($demoStudents as $st) {
+                // Ensure user exists
+                $uStmt = $db->prepare("SELECT id FROM users WHERE LOWER(email) = LOWER(:email)");
+                $uStmt->execute(['email' => $st['email']]);
+                $uId = $uStmt->fetchColumn();
+
+                if (!$uId) {
+                    $insUser = $db->prepare("INSERT INTO users (full_name, email, password_hash, role) VALUES (:name, :email, :hash, 'student')");
+                    $insUser->execute(['name' => $st['name'], 'email' => $st['email'], 'hash' => $hash]);
+                    $uStmt->execute(['email' => $st['email']]);
+                    $uId = $uStmt->fetchColumn();
+                }
+
+                if ($uId) {
+                    // Ensure student record exists
+                    $sStmt = $db->prepare("SELECT id FROM students WHERE user_id = :uid OR matric_number = :matric");
+                    $sStmt->execute(['uid' => $uId, 'matric' => $st['matric']]);
+                    $sId = $sStmt->fetchColumn();
+
+                    if (!$sId) {
+                        $insSt = $db->prepare("INSERT INTO students (user_id, matric_number, department_id, programme, level, phone, address) VALUES (:uid, :matric, :dept, :prog, :level, :phone, 'Campus Hall of Residence')");
+                        $insSt->execute([
+                            'uid' => $uId,
+                            'matric' => $st['matric'],
+                            'dept' => $st['dept'],
+                            'prog' => $st['prog'],
+                            'level' => $st['level'],
+                            'phone' => $st['phone']
+                        ]);
+                        $sStmt->execute(['uid' => $uId, 'matric' => $st['matric']]);
+                        $sId = $sStmt->fetchColumn();
+                    }
+
+                    // Ensure SIWES application exists
+                    if ($sId) {
+                        $appStmt = $db->prepare("SELECT id FROM siwes_applications WHERE student_id = :sid");
+                        $appStmt->execute(['sid' => $sId]);
+                        $appId = $appStmt->fetchColumn();
+
+                        if (!$appId) {
+                            $insApp = $db->prepare("INSERT INTO siwes_applications (student_id, preferred_industry, preferred_location, status, notes) VALUES (:sid, :ind, :loc, :status, :notes)");
+                            $insApp->execute([
+                                'sid' => $sId,
+                                'ind' => $st['industry'],
+                                'loc' => $st['location'],
+                                'status' => $st['status'],
+                                'notes' => $st['notes']
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            // 5. Ensure Equal & Balanced Distribution of Students to Supervisors
+            $activeSupervisors = $db->query("SELECT u.id FROM users u JOIN supervisors sup ON u.id = sup.user_id ORDER BY sup.id ASC")->fetchAll(PDO::FETCH_COLUMN);
+            if (!empty($activeSupervisors)) {
+                $unassignedStudents = $db->query("SELECT id FROM students WHERE supervisor_id IS NULL ORDER BY id ASC")->fetchAll(PDO::FETCH_COLUMN);
+                $supCount = count($activeSupervisors);
+                foreach ($unassignedStudents as $index => $studId) {
+                    $chosenSupId = $activeSupervisors[$index % $supCount];
+                    $assignStmt = $db->prepare("UPDATE students SET supervisor_id = :sup, supervisor_assigned_at = CURRENT_TIMESTAMP WHERE id = :sid");
+                    $assignStmt->execute(['sup' => $chosenSupId, 'sid' => $studId]);
+                }
+            }
+
+            // 6. Ensure Allocations Exist for Allocated Students
+            $allocCount = (int)$db->query("SELECT COUNT(*) FROM allocations")->fetchColumn();
+            if ($allocCount === 0) {
+                $st1 = $db->query("SELECT s.id, a.id AS app_id FROM students s JOIN siwes_applications a ON s.id = a.student_id WHERE s.matric_number = 'F/ND/22/3210001'")->fetch();
+                $st2 = $db->query("SELECT s.id, a.id AS app_id FROM students s JOIN siwes_applications a ON s.id = a.student_id WHERE s.matric_number = 'F/HND/22/3210002'")->fetch();
+                $co4 = $db->query("SELECT id FROM companies WHERE id = 4")->fetchColumn();
+
+                if ($co4) {
+                    if ($st2 && !empty($st2['app_id'])) {
+                        $db->exec("INSERT INTO allocations (application_id, student_id, company_id, compatibility_score, match_reasons, status, allocated_by, start_date, end_date)
+                                   VALUES ({$st2['app_id']}, {$st2['id']}, 4, 95, '{\"match\":\"auto\"}', 'Allocated', 2, '2026-09-01', '2027-02-28')");
+                    }
+                    if ($st1 && !empty($st1['app_id'])) {
+                        $db->exec("INSERT INTO allocations (application_id, student_id, company_id, compatibility_score, match_reasons, status, allocated_by, start_date, end_date)
+                                   VALUES ({$st1['app_id']}, {$st1['id']}, 4, 90, '{\"match\":\"auto\"}', 'Allocated', 2, '2026-10-17', '2027-04-17')");
                     }
                 }
             }

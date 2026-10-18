@@ -148,13 +148,11 @@ class CoordinatorController {
         $supervisors = $db->query("
             SELECT u.id, u.full_name, u.email, sup.staff_id, sup.phone, sup.designation, sup.max_capacity,
                    d.name AS dept_name, d.code AS dept_code,
-                   COUNT(s.id) AS assigned_student_count
+                   (SELECT COUNT(*) FROM students WHERE supervisor_id = u.id) AS assigned_student_count
             FROM users u
             LEFT JOIN supervisors sup ON u.id = sup.user_id
             LEFT JOIN departments d ON sup.department_id = d.id
-            LEFT JOIN students s ON u.id = s.supervisor_id
             WHERE u.role = 'supervisor'
-            GROUP BY u.id
             ORDER BY u.full_name ASC
         ")->fetchAll();
 

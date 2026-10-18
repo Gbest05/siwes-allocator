@@ -58,8 +58,8 @@ CREATE TABLE IF NOT EXISTS students (
     user_id INT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
     matric_number VARCHAR(50) UNIQUE NOT NULL,
     department_id INT REFERENCES departments(id) ON DELETE SET NULL,
-    programme VARCHAR(50) NOT NULL CHECK (programme IN ('ND', 'HND')),
-    level VARCHAR(20) NOT NULL CHECK (level IN ('ND1', 'ND2', 'HND1', 'HND2')),
+    programme VARCHAR(50) NOT NULL,
+    level VARCHAR(50) NOT NULL,
     phone VARCHAR(50) NOT NULL,
     address TEXT,
     supervisor_id INT REFERENCES users(id) ON DELETE SET NULL,
@@ -118,9 +118,13 @@ CREATE TABLE IF NOT EXISTS notifications (
 CREATE TABLE IF NOT EXISTS supervisors (
     id SERIAL PRIMARY KEY,
     user_id INT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
-    company_id INT REFERENCES companies(id) ON DELETE CASCADE,
-    designation VARCHAR(100) NOT NULL,
-    phone VARCHAR(50) NOT NULL
+    department_id INT REFERENCES departments(id) ON DELETE SET NULL,
+    company_id INT REFERENCES companies(id) ON DELETE SET NULL,
+    staff_id VARCHAR(100) UNIQUE,
+    designation VARCHAR(100) DEFAULT 'Institution Supervisor',
+    phone VARCHAR(50),
+    max_capacity INT DEFAULT 20,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS placement_reviews (

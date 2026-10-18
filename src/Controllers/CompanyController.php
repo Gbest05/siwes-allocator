@@ -13,10 +13,9 @@ class CompanyController {
         $db = Database::getInstance();
 
         $companies = $db->query("
-            SELECT c.*, COUNT(a.id) AS allocated_count
+            SELECT c.*, 
+                   (SELECT COUNT(*) FROM allocations WHERE company_id = c.id AND status != 'Cancelled') AS allocated_count
             FROM companies c
-            LEFT JOIN allocations a ON c.id = a.company_id AND a.status != 'Cancelled'
-            GROUP BY c.id
             ORDER BY c.name ASC
         ")->fetchAll();
 
